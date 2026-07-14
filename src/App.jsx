@@ -233,6 +233,11 @@ export default function App() {
 
     yt.stopVideo();
     setIsPlaying(false);
+    setCurrentTime(0);
+    currentTimeRef.current = 0;
+    setDuration(0);
+    setCurrentLyricIndex(-1);
+    currentLyricIndexRef.current = -1;
 
     setSongInfo({
       title: trackInfo.title,
