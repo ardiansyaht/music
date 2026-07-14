@@ -22,24 +22,39 @@ export default function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('melodia-theme') || 'pastel');
 
   // ── Views ──
-  const [currentView, setCurrentView] = useState('home'); // 'home' | 'player'
+  const [currentView, setCurrentView] = useState(() => localStorage.getItem('melodia-view') || 'home'); // 'home' | 'player'
   const [isFullscreenLyric, setIsFullscreenLyric] = useState(false);
 
   // ── Playback State ──
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [syncOffset, setSyncOffset] = useState(0.0);
+  const [syncOffset, setSyncOffset] = useState(() => {
+    const val = localStorage.getItem('melodia-sync-offset');
+    return val ? parseFloat(val) : 0.0;
+  });
   const [volume, setVolume] = useState(75);
   const [isMuted, setIsMuted] = useState(false);
 
   // ── Song Info ──
-  const [songInfo, setSongInfo] = useState({
-    title: '', artist: '', album: '', thumbnail: '', videoId: ''
+  const [songInfo, setSongInfo] = useState(() => {
+    try {
+      const val = localStorage.getItem('melodia-song-info');
+      return val ? JSON.parse(val) : { title: '', artist: '', album: '', thumbnail: '', videoId: '' };
+    } catch (e) {
+      return { title: '', artist: '', album: '', thumbnail: '', videoId: '' };
+    }
   });
 
   // ── Lyrics ──
-  const [currentLyrics, setCurrentLyrics] = useState(LYRICS_DATA);
+  const [currentLyrics, setCurrentLyrics] = useState(() => {
+    try {
+      const val = localStorage.getItem('melodia-lyrics');
+      return val ? JSON.parse(val) : LYRICS_DATA;
+    } catch (e) {
+      return LYRICS_DATA;
+    }
+  });
   const [currentLyricIndex, setCurrentLyricIndex] = useState(-1);
 
   // ── Search ──
@@ -49,13 +64,41 @@ export default function App() {
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
 
   // ── Playlist / Queue / History ──
-  const [currentPlaylist, setCurrentPlaylist] = useState([]);
+  const [currentPlaylist, setCurrentPlaylist] = useState(() => {
+    try {
+      const val = localStorage.getItem('melodia-playlist');
+      return val ? JSON.parse(val) : [];
+    } catch (e) {
+      return [];
+    }
+  });
   const [currentPlaylistIndex, setCurrentPlaylistIndex] = useState(0);
-  const [songHistory, setSongHistory] = useState([]); // previously played songs
-  const [songQueue, setSongQueue] = useState([]);     // upcoming songs
+  const [songHistory, setSongHistory] = useState(() => {
+    try {
+      const val = localStorage.getItem('melodia-history');
+      return val ? JSON.parse(val) : [];
+    } catch (e) {
+      return [];
+    }
+  }); // previously played songs
+  const [songQueue, setSongQueue] = useState(() => {
+    try {
+      const val = localStorage.getItem('melodia-queue');
+      return val ? JSON.parse(val) : [];
+    } catch (e) {
+      return [];
+    }
+  });     // upcoming songs
 
   // ── Recommendations ──
-  const [recommendations, setRecommendations] = useState([]);
+  const [recommendations, setRecommendations] = useState(() => {
+    try {
+      const val = localStorage.getItem('melodia-recommendations');
+      return val ? JSON.parse(val) : [];
+    } catch (e) {
+      return [];
+    }
+  });
   const [isLoadingRecs, setIsLoadingRecs] = useState(false);
 
   // ── Refs ──
@@ -116,6 +159,46 @@ export default function App() {
     localStorage.setItem('melodia-theme', theme);
     spawnParticles();
   }, [theme]);
+
+  // ── Load video on mount if state is restored ──
+  useEffect(() => {
+    if (currentView === 'player' && songInfo.videoId) {
+      yt.playVideo(songInfo.videoId);
+    }
+  }, []);
+
+  // ── State Persistence ──
+  useEffect(() => {
+    localStorage.setItem('melodia-view', currentView);
+  }, [currentView]);
+
+  useEffect(() => {
+    localStorage.setItem('melodia-song-info', JSON.stringify(songInfo));
+  }, [songInfo]);
+
+  useEffect(() => {
+    localStorage.setItem('melodia-lyrics', JSON.stringify(currentLyrics));
+  }, [currentLyrics]);
+
+  useEffect(() => {
+    localStorage.setItem('melodia-queue', JSON.stringify(songQueue));
+  }, [songQueue]);
+
+  useEffect(() => {
+    localStorage.setItem('melodia-history', JSON.stringify(songHistory));
+  }, [songHistory]);
+
+  useEffect(() => {
+    localStorage.setItem('melodia-playlist', JSON.stringify(currentPlaylist));
+  }, [currentPlaylist]);
+
+  useEffect(() => {
+    localStorage.setItem('melodia-sync-offset', syncOffset.toString());
+  }, [syncOffset]);
+
+  useEffect(() => {
+    localStorage.setItem('melodia-recommendations', JSON.stringify(recommendations));
+  }, [recommendations]);
 
   // ── ESC to close fullscreen ──
   useEffect(() => {
