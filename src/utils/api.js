@@ -92,14 +92,38 @@ const deezerJSONP = (url) => {
  */
 export const fetchArtistTracks = async (artist) => {
   try {
-    // Step 1: Search for the exact artist ID to avoid fuzzy keyword matches
-    const artistSearch = await deezerJSONP(
-      `https://api.deezer.com/search/artist?q=${encodeURIComponent(artist)}&limit=1`
+    const searchName = artist.toLowerCase().trim();
+    // Step 1: Search tracks instead of artists to find the most popular artist matching this name
+    const trackSearch = await deezerJSONP(
+      `https://api.deezer.com/search?q=${encodeURIComponent(artist)}&limit=5`
     );
-    if (artistSearch.data && artistSearch.data.length > 0) {
-      const artistId = artistSearch.data[0].id;
-      const artistName = artistSearch.data[0].name.toLowerCase();
-      
+    let artistId = null;
+    let artistName = searchName;
+
+    if (trackSearch.data && trackSearch.data.length > 0) {
+      const matchedTrack = trackSearch.data.find(
+        t => t.artist.name.toLowerCase() === searchName
+      ) || trackSearch.data[0];
+
+      artistId = matchedTrack.artist.id;
+      artistName = matchedTrack.artist.name.toLowerCase();
+    }
+
+    // Fallback to artist search if no tracks found
+    if (!artistId) {
+      const artistSearch = await deezerJSONP(
+        `https://api.deezer.com/search/artist?q=${encodeURIComponent(artist)}&limit=3`
+      );
+      if (artistSearch.data && artistSearch.data.length > 0) {
+        const matchedArtist = artistSearch.data.find(
+          a => a.name.toLowerCase() === searchName
+        ) || artistSearch.data[0];
+        artistId = matchedArtist.id;
+        artistName = matchedArtist.name.toLowerCase();
+      }
+    }
+
+    if (artistId) {
       // Step 2: Fetch that specific artist's top tracks
       const topTracks = await deezerJSONP(
         `https://api.deezer.com/artist/${artistId}/top?limit=25`
