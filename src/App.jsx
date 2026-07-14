@@ -16,6 +16,7 @@ import LyricsPanel from './components/LyricsPanel';
 import PlayerBar from './components/PlayerBar';
 import FullscreenLyrics from './components/FullscreenLyrics';
 import RecommendedPanel from './components/RecommendedPanel';
+import Toast from './components/Toast';
 
 export default function App() {
   // ── Theme ──
@@ -100,6 +101,23 @@ export default function App() {
     }
   });
   const [isLoadingRecs, setIsLoadingRecs] = useState(false);
+  const [isLoadingTrack, setIsLoadingTrack] = useState(false);
+
+  // ── Toast Notification State ──
+  const [toastMsg, setToastMsg] = useState('');
+  const [toastIcon, setToastIcon] = useState('');
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastTimerRef = useRef(null);
+
+  const showToast = (msg, icon = '') => {
+    clearTimeout(toastTimerRef.current);
+    setToastMsg(msg);
+    setToastIcon(icon);
+    setToastVisible(true);
+    toastTimerRef.current = setTimeout(() => {
+      setToastVisible(false);
+    }, 1500);
+  };
 
   // ── Refs ──
   const isPlayingRef = useRef(false);
@@ -128,11 +146,13 @@ export default function App() {
       const state = e.data;
       if (state === 1) { // PLAYING
         setIsPlaying(true);
+        setIsLoadingTrack(false);
         setDuration(yt.getDuration());
       } else if (state === 2) { // PAUSED
         setIsPlaying(false);
       } else if (state === 0) { // ENDED
         setIsPlaying(false);
+        setIsLoadingTrack(false);
         setCurrentLyricIndex(-1);
         currentLyricIndexRef.current = -1;
         handleSongEnded();
@@ -200,14 +220,82 @@ export default function App() {
     localStorage.setItem('melodia-recommendations', JSON.stringify(recommendations));
   }, [recommendations]);
 
-  // ── ESC to close fullscreen ──
+  // ── Keyboard Shortcuts & ESC Handler ──
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isFullscreenLyric) setIsFullscreenLyric(false);
+      // 1. ESC to close fullscreen
+      if (e.key === 'Escape' && isFullscreenLyric) {
+        setIsFullscreenLyric(false);
+        showToast('Tutup Fullscreen', '⛶');
+        return;
+      }
+
+      // Avoid triggering shortcuts when typing in search or inputs
+      if (
+        document.activeElement.tagName === 'INPUT' ||
+        document.activeElement.tagName === 'TEXTAREA' ||
+        document.activeElement.isContentEditable
+      ) {
+        return;
+      }
+
+      switch (e.code) {
+        case 'Space':
+          e.preventDefault();
+          const playing = handlePlayToggle();
+          showToast(playing ? 'Putar' : 'Jeda', playing ? '▶' : '⏸');
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          handleRewind();
+          showToast('Mundur 10s', '⏪');
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          handleForward();
+          showToast('Maju 10s', '⏩');
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setVolume((prev) => {
+            const next = Math.min(prev + 5, 100);
+            setIsMuted(false);
+            showToast(`Volume ${next}%`, '🔊');
+            return next;
+          });
+          break;
+        case 'ArrowDown':
+          e.preventDefault();
+          setVolume((prev) => {
+            const next = Math.max(prev - 5, 0);
+            setIsMuted(false);
+            showToast(`Volume ${next}%`, next === 0 ? '🔇' : '🔉');
+            return next;
+          });
+          break;
+        case 'KeyM':
+          e.preventDefault();
+          setIsMuted((prev) => {
+            const next = !prev;
+            showToast(next ? 'Mute' : 'Unmute', next ? '🔇' : '🔊');
+            return next;
+          });
+          break;
+        case 'KeyF':
+          e.preventDefault();
+          setIsFullscreenLyric((prev) => {
+            const next = !prev;
+            showToast(next ? 'Fullscreen' : 'Tutup Fullscreen', '⛶');
+            return next;
+          });
+          break;
+        default:
+          break;
+      }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreenLyric]);
+  }, [isFullscreenLyric, isPlaying, volume, isMuted, duration]);
 
   // ── Outside click to close search ──
   useEffect(() => {
@@ -227,6 +315,12 @@ export default function App() {
         currentTimeRef.current = curr;
         setCurrentTime(curr);
         syncLyrics(curr);
+        
+        // Continuously update duration as YouTube loads video metadata
+        const dur = yt.getDuration();
+        if (dur > 0) {
+          setDuration(dur);
+        }
       }
       animId = requestAnimationFrame(tick);
     };
@@ -308,6 +402,7 @@ export default function App() {
 
   const playTrackByInfo = async (trackInfo, addToHistory = true) => {
     setCurrentView('player');
+    setIsLoadingTrack(true);
 
     // Push current song to history
     if (addToHistory && songInfo.title) {
@@ -475,7 +570,11 @@ export default function App() {
 
   const handlePlayToggle = () => {
     const result = yt.togglePlay();
-    if (typeof result === 'boolean') setIsPlaying(result);
+    if (typeof result === 'boolean') {
+      setIsPlaying(result);
+      return result;
+    }
+    return !isPlaying;
   };
 
   const handleSeek = (e) => {
@@ -491,11 +590,15 @@ export default function App() {
   const handleRewind = () => {
     const target = Math.max(0, yt.getCurrentTime() - 10);
     yt.seekTo(target);
+    setCurrentTime(target);
+    currentTimeRef.current = target;
   };
 
   const handleForward = () => {
     const target = Math.min(duration, yt.getCurrentTime() + 10);
     yt.seekTo(target);
+    setCurrentTime(target);
+    currentTimeRef.current = target;
   };
 
   const handleSyncAdjust = (amt) => {
@@ -626,8 +729,8 @@ export default function App() {
         {currentView === 'home' ? (
           <HomePage onSelectSuggestion={handleQuickSuggestion} />
         ) : (
-          <>
-            <NowPlaying songInfo={songInfo} isPlaying={isPlaying} />
+          <div className="player-view">
+            <NowPlaying songInfo={songInfo} isPlaying={isPlaying} isLoading={isLoadingTrack} />
             <Visualizer isPlayingRef={isPlayingRef} />
             <div className="content-row">
               <LyricsPanel
@@ -636,6 +739,7 @@ export default function App() {
                 lyricsScrollRef={lyricsScrollRef}
                 onLyricClick={handleLyricsLineClick}
                 onFullscreen={() => setIsFullscreenLyric(true)}
+                isLoading={isLoadingTrack}
               />
               <RecommendedPanel
                 recommendations={recommendations}
@@ -644,7 +748,7 @@ export default function App() {
                 isLoading={isLoadingRecs}
               />
             </div>
-          </>
+          </div>
         )}
       </main>
 
@@ -688,6 +792,9 @@ export default function App() {
         onForward={handleForward}
         onSeek={handleSeek}
       />
+
+      {/* Toast Notification overlay */}
+      <Toast message={toastMsg} icon={toastIcon} isVisible={toastVisible} />
     </div>
   );
 }

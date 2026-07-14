@@ -98,20 +98,25 @@ export const fetchArtistTracks = async (artist) => {
     );
     if (artistSearch.data && artistSearch.data.length > 0) {
       const artistId = artistSearch.data[0].id;
+      const artistName = artistSearch.data[0].name.toLowerCase();
       
       // Step 2: Fetch that specific artist's top tracks
       const topTracks = await deezerJSONP(
-        `https://api.deezer.com/artist/${artistId}/top?limit=15`
+        `https://api.deezer.com/artist/${artistId}/top?limit=25`
       );
       if (topTracks.data && topTracks.data.length > 0) {
-        return topTracks.data.map(track => ({
-          title: track.title,
-          artist: track.artist.name,
-          album: track.album?.title || '',
-          thumbnail: track.album?.cover_medium || '',
-          videoId: null, // to be resolved on Piped when clicked
-          duration: track.duration
-        }));
+        // Step 3: Filter to only include tracks where the primary artist matches
+        return topTracks.data
+          .filter(track => track.artist.name.toLowerCase() === artistName)
+          .slice(0, 15)
+          .map(track => ({
+            title: track.title,
+            artist: track.artist.name,
+            album: track.album?.title || '',
+            thumbnail: track.album?.cover_medium || '',
+            videoId: null, // to be resolved on Piped when clicked
+            duration: track.duration
+          }));
       }
     }
   } catch (e) {

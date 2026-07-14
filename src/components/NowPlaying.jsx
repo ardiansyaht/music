@@ -3,7 +3,21 @@
 // ================================================================
 import React from 'react';
 
-export default function NowPlaying({ songInfo, isPlaying }) {
+export default function NowPlaying({ songInfo, isPlaying, isLoading }) {
+  if (isLoading) {
+    return (
+      <section className="now-playing skeleton">
+        <div className="np-art-wrapper skeleton-shimmer">
+          <div className="np-art-placeholder skeleton-art"></div>
+        </div>
+        <div className="np-info">
+          <div className="skeleton-line skeleton-title"></div>
+          <div className="skeleton-line skeleton-artist"></div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="now-playing">
       <div className="np-art-wrapper">

@@ -2,6 +2,7 @@
 //  Melodia — TopBar Component
 // ================================================================
 import React from 'react';
+import { formatTime } from '../utils/helpers';
 
 export default function TopBar({
   theme,
@@ -59,6 +60,7 @@ export default function TopBar({
                     <div className="sr-item-meta">{item.artist}</div>
                   </div>
                   <div className="sr-item-badges">
+                    {item.duration > 0 && <span className="sr-badge duration">{formatTime(item.duration)}</span>}
                     {item.hasSynced && <span className="sr-badge synced">SYNCED</span>}
                     {item.videoId && <span className="sr-badge full">FULL SONG</span>}
                   </div>

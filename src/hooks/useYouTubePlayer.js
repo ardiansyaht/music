@@ -45,12 +45,12 @@ export function useYouTubePlayer({ volume, isMuted, onStateChange, onError }) {
             ytReadyRef.current = true;
             ytPlayerRef.current.setVolume(volume);
             const vid = targetVideoIdRef.current;
-            if (vid) {
-              ytPlayerRef.current.cueVideoById(vid);
-            }
-            if (playOnReadyRef.current) {
-              ytPlayerRef.current.playVideo();
+            if (vid && playOnReadyRef.current) {
+              // Use loadVideoById to auto-play (not just cue)
+              ytPlayerRef.current.loadVideoById(vid);
               playOnReadyRef.current = false;
+            } else if (vid) {
+              ytPlayerRef.current.cueVideoById(vid);
             }
           },
           onStateChange: (e) => {

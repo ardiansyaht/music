@@ -1,7 +1,7 @@
 // ================================================================
 //  Melodia — LyricsPanel Component
 // ================================================================
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function LyricsPanel({
   currentLyrics,
@@ -9,7 +9,70 @@ export default function LyricsPanel({
   lyricsScrollRef,
   onLyricClick,
   onFullscreen,
+  isLoading,
 }) {
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const userScrolling = useRef(false);
+  const scrollTimer = useRef(null);
+
+  // Detect when user manually scrolls away from the active lyric
+  useEffect(() => {
+    const container = lyricsScrollRef?.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      userScrolling.current = true;
+      clearTimeout(scrollTimer.current);
+      scrollTimer.current = setTimeout(() => {
+        userScrolling.current = false;
+        // Check if active lyric is visible
+        const activeEl = container.querySelector('.lyric-line.active');
+        if (activeEl) {
+          const containerRect = container.getBoundingClientRect();
+          const activeRect = activeEl.getBoundingClientRect();
+          const isVisible = activeRect.top >= containerRect.top && activeRect.bottom <= containerRect.bottom;
+          setShowScrollBtn(!isVisible);
+        }
+      }, 300);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, [lyricsScrollRef]);
+
+  // Hide button when active lyric changes (auto-scroll brings it back)
+  useEffect(() => {
+    if (!userScrolling.current) {
+      setShowScrollBtn(false);
+    }
+  }, [currentLyricIndex]);
+
+  const scrollToActive = () => {
+    const container = lyricsScrollRef?.current;
+    if (!container) return;
+    const activeEl = container.querySelector('.lyric-line.active');
+    if (activeEl) {
+      container.scrollTop =
+        activeEl.offsetTop - container.clientHeight / 2 + activeEl.clientHeight / 2;
+      setShowScrollBtn(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <section className="lyrics-panel skeleton">
+        <div className="lyrics-panel-header"></div>
+        <div className="lyrics-scroll">
+          <div className="skeleton-line skeleton-lyric-line width-60"></div>
+          <div className="skeleton-line skeleton-lyric-line width-80"></div>
+          <div className="skeleton-line skeleton-lyric-line width-40"></div>
+          <div className="skeleton-line skeleton-lyric-line width-70"></div>
+          <div className="skeleton-line skeleton-lyric-line width-50"></div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="lyrics-panel">
       <div className="lyrics-panel-header">
@@ -36,6 +99,11 @@ export default function LyricsPanel({
           </div>
         ))}
       </div>
+      {showScrollBtn && currentLyricIndex >= 0 && (
+        <button className="scroll-to-lyric-btn" onClick={scrollToActive} title="Kembali ke lirik aktif">
+          ↓ Lirik Aktif
+        </button>
+      )}
     </section>
   );
 }
