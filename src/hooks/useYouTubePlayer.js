@@ -13,6 +13,17 @@ export function useYouTubePlayer({ volume, isMuted, onStateChange, onError }) {
   const targetVideoIdRef = useRef('');
   const playOnReadyRef = useRef(false);
 
+  const onStateChangeRef = useRef(onStateChange);
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onStateChangeRef.current = onStateChange;
+  }, [onStateChange]);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
+
   // Initialize YT Player
   const initYTPlayer = useCallback(() => {
     if (ytPlayerRef.current) return;
@@ -43,17 +54,17 @@ export function useYouTubePlayer({ volume, isMuted, onStateChange, onError }) {
             }
           },
           onStateChange: (e) => {
-            if (onStateChange) onStateChange(e);
+            if (onStateChangeRef.current) onStateChangeRef.current(e);
           },
           onError: (e) => {
-            if (onError) onError(e);
+            if (onErrorRef.current) onErrorRef.current(e);
           }
         }
       });
     } catch (err) {
       console.error('Failed to initialize YT.Player:', err);
     }
-  }, []);
+  }, [volume]);
 
   // Load YouTube IFrame API script on mount
   useEffect(() => {
