@@ -86,3 +86,28 @@ const deezerJSONP = (url) => {
     document.head.appendChild(script);
   });
 };
+
+/**
+ * Fetch top tracks by an artist via Deezer JSONP for same-artist recommendations
+ */
+export const fetchArtistTracks = async (artist) => {
+  try {
+    const data = await deezerJSONP(
+      `https://api.deezer.com/search?q=artist:"${artist}"&limit=15`
+    );
+    if (data.data && data.data.length > 0) {
+      return data.data.map(track => ({
+        title: track.title,
+        artist: track.artist.name,
+        album: track.album.title,
+        thumbnail: track.album.cover_medium,
+        videoId: null, // to be resolved on Piped when clicked
+        duration: track.duration
+      }));
+    }
+  } catch (e) {
+    console.error('Deezer artist tracks fetch failed:', e);
+  }
+  return [];
+};
+

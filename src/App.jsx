@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LYRICS_DATA } from './lyrics';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
-import { searchPiped, searchLRCLIB, fetchDeezerArt } from './utils/api';
+import { searchPiped, searchLRCLIB, fetchDeezerArt, fetchArtistTracks } from './utils/api';
 import { parseLRC, extractVideoId, prioritizeLyricVideos } from './utils/helpers';
 
 import TopBar from './components/TopBar';
@@ -282,28 +282,8 @@ export default function App() {
       }).catch(() => {});
     }
 
-    // Pre-fill queue with related songs (if queue is empty)
-    if (songQueue.length === 0) {
-      buildQueue(trackInfo.artist, trackInfo.title);
-    }
-
-    // Fetch recommendations from same artist
+    // Fetch recommendations from same artist & build queue with them
     fetchRecommendations(trackInfo.artist, trackInfo.title);
-  };
-
-  const buildQueue = async (artist, title) => {
-    try {
-      const results = await searchPiped(`${artist} ${title}`);
-      if (results.length > 1) {
-        const queueItems = results.slice(1, 8).map(r => ({
-          title: r.title || '',
-          artist: r.uploaderName || '',
-          videoId: extractVideoId(r.url),
-          thumbnail: r.thumbnail || '',
-        })).filter(r => r.videoId);
-        setSongQueue(queueItems);
-      }
-    } catch (e) {}
   };
 
   // ── Fetch same-artist recommendations ──
@@ -311,20 +291,20 @@ export default function App() {
     setIsLoadingRecs(true);
     setRecommendations([]);
     try {
-      const results = await searchPiped(`${artist} songs`);
-      if (results.length > 0) {
-        const recs = results
-          .map(r => ({
-            title: r.title || '',
-            artist: r.uploaderName || '',
-            videoId: extractVideoId(r.url),
-            thumbnail: r.thumbnail || '',
-          }))
-          .filter(r => r.videoId && !r.title.toLowerCase().includes(currentTitle.toLowerCase()))
-          .slice(0, 10);
-        setRecommendations(recs);
+      const recs = await fetchArtistTracks(artist);
+      if (recs.length > 0) {
+        // Filter out the current playing song to avoid immediate repeating
+        const filtered = recs.filter(
+          r => r.title.toLowerCase().trim() !== currentTitle.toLowerCase().trim()
+        );
+        setRecommendations(filtered);
+        
+        // Populate upcoming songQueue with these recommended tracks from same artist
+        setSongQueue(filtered);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error('Error fetching artist recommendations:', e);
+    }
     setIsLoadingRecs(false);
   };
 
