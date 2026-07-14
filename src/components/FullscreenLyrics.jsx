@@ -2,7 +2,7 @@
 //  Melodia — FullscreenLyrics Component
 //  Controls auto-hide after 3s (Netflix / Apple Music style)
 // ================================================================
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatTime } from '../utils/helpers';
 
 export default function FullscreenLyrics({
@@ -31,41 +31,36 @@ export default function FullscreenLyrics({
     };
   }, []);
 
-  // Reset controls visibility when entering/leaving fullscreen
+  // Always start hidden when entering fullscreen
   useEffect(() => {
-    if (isActive) {
-      setShowControls(true);
-      startHideTimer();
-    } else {
+    if (!isActive) {
       setShowControls(false);
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     }
   }, [isActive]);
 
-  const startHideTimer = useCallback(() => {
+  const startHideTimer = () => {
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
       setShowControls(false);
     }, 3000);
-  }, []);
+  };
 
-  const handleInteraction = useCallback(() => {
-    setShowControls(true);
-    startHideTimer();
-  }, [startHideTimer]);
-
-  // Clicking on the overlay background toggles play/pause
+  // Click/tap anywhere on overlay to toggle controls visibility
   const handleOverlayClick = (e) => {
-    // Don't trigger if clicking on buttons, lyric lines, close btn, or header
-    if (e.target.closest('.fs-ctrl-btn, .fs-close, .fs-header, .fs-lyric-line, .fs-track')) return;
-    handleInteraction();
+    if (e.target.closest('.fs-ctrl-btn, .fs-close, .fs-lyric-line, .fs-track')) return;
+    if (showControls) {
+      setShowControls(false);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    } else {
+      setShowControls(true);
+      startHideTimer();
+    }
   };
 
   return (
     <div
       className={`fullscreen-overlay ${isActive ? 'active' : ''}`}
-      onMouseMove={handleInteraction}
-      onTouchStart={handleInteraction}
       onClick={handleOverlayClick}
     >
       <div className={`fs-header ${showControls ? 'visible' : 'hidden'}`}>
