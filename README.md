@@ -34,6 +34,7 @@
 💬  Artist Recommendations      Panel rekomendasi lagu lain dari penyanyi yang sama secara real-time
 🔁  Smart Auto-Play             Lagu berikutnya otomatis diputar ketika lagu aktif selesai
 ⏮/⏭ Track Navigation          Navigasi mudah ke lagu sebelum/sesudah dalam riwayat putar
+💾  State Persistence           Menyimpan antrean, lirik, dan status halaman di localStorage (aman dari refresh)
 🎨  4 premium themes            Pastel Dream · Retro VHS · Dark Space · Cyberpunk
 📊  Live visualizer             Animasi audio bars 60fps di canvas
 🔧  Sync offset                 Geser timing lirik ± 0.1 detik jika tidak pas
@@ -41,7 +42,18 @@
 
 ---
 
-## 🚀 Cara Menjalankan
+## 🌐 Hosting & Deployment (GitHub Pages)
+Aplikasi ini sudah dikonfigurasi agar bisa di-deploy langsung ke **GitHub Pages** secara otomatis menggunakan GitHub Actions.
+
+Untuk mengaktifkannya:
+1. Masuk ke tab **Settings** repositori GitHub Anda.
+2. Di sidebar kiri, klik **Pages**.
+3. Di bawah bagian **Build and deployment** -> **Source**, ubah pilihan dropdown menjadi **GitHub Actions**.
+4. Selesai! Halaman web Anda akan otomatis dibuat dan siap diakses di alamat `https://ardiansyaht.github.io/music/`.
+
+---
+
+## 🚀 Cara Menjalankan Secara Lokal
 
 ### Menggunakan Script Pembantu (Rekomendasi)
 Jika Anda menggunakan Windows dan tidak memiliki Node.js global, Anda bisa langsung menjalankan perintah ini di folder proyek:
