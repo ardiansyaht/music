@@ -102,6 +102,7 @@ export default function App() {
   });
   const [isLoadingRecs, setIsLoadingRecs] = useState(false);
   const [isLoadingTrack, setIsLoadingTrack] = useState(false);
+  const [isBarHidden, setIsBarHidden] = useState(false);
 
   // ── Toast Notification State ──
   const [toastMsg, setToastMsg] = useState('');
@@ -289,13 +290,21 @@ export default function App() {
             return next;
           });
           break;
+        case 'KeyH':
+          e.preventDefault();
+          setIsBarHidden((prev) => {
+            const next = !prev;
+            showToast(next ? 'Kontrol Disembunyikan' : 'Kontrol Ditampilkan', next ? '▼' : '▲');
+            return next;
+          });
+          break;
         default:
           break;
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreenLyric, isPlaying, volume, isMuted, duration]);
+  }, [isFullscreenLyric, isPlaying, volume, isMuted, duration, isBarHidden]);
 
   // ── Outside click to close search ──
   useEffect(() => {
@@ -754,25 +763,38 @@ export default function App() {
 
       {/* Player Bar (only in player view) */}
       {currentView === 'player' && (
-        <PlayerBar
-          currentTime={currentTime}
-          duration={duration}
-          isPlaying={isPlaying}
-          syncOffset={syncOffset}
-          volume={volume}
-          isMuted={isMuted}
-          hasPrev={songHistory.length > 0}
-          hasNext={songQueue.length > 0}
-          onSeek={handleSeek}
-          onPlayToggle={handlePlayToggle}
-          onRewind={handleRewind}
-          onForward={handleForward}
-          onPrevTrack={handlePrevTrack}
-          onNextTrack={handleNextTrack}
-          onSyncAdjust={handleSyncAdjust}
-          onVolumeChange={(v) => { setVolume(v); setIsMuted(false); }}
-          onToggleMute={() => setIsMuted(!isMuted)}
-        />
+        <>
+          <PlayerBar
+            currentTime={currentTime}
+            duration={duration}
+            isPlaying={isPlaying}
+            syncOffset={syncOffset}
+            volume={volume}
+            isMuted={isMuted}
+            hasPrev={songHistory.length > 0}
+            hasNext={songQueue.length > 0}
+            onSeek={handleSeek}
+            onPlayToggle={handlePlayToggle}
+            onRewind={handleRewind}
+            onForward={handleForward}
+            onPrevTrack={handlePrevTrack}
+            onNextTrack={handleNextTrack}
+            onSyncAdjust={handleSyncAdjust}
+            onVolumeChange={(v) => { setVolume(v); setIsMuted(false); }}
+            onToggleMute={() => setIsMuted(!isMuted)}
+            isHidden={isBarHidden}
+            onToggleHide={() => setIsBarHidden(true)}
+          />
+          {isBarHidden && (
+            <button
+              className="show-bar-btn"
+              onClick={() => setIsBarHidden(false)}
+              title="Tampilkan Kontrol (H)"
+            >
+              ▲ Tampilkan Kontrol
+            </button>
+          )}
+        </>
       )}
 
       {/* Fullscreen Lyrics Overlay */}

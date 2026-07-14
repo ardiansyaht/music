@@ -23,9 +23,11 @@ export default function PlayerBar({
   onSyncAdjust,
   onVolumeChange,
   onToggleMute,
+  isHidden,
+  onToggleHide,
 }) {
   return (
-    <footer className="player-bar">
+    <footer className={`player-bar ${isHidden ? 'bar-hidden' : ''}`}>
       <div className="pb-progress">
         <span className="pb-time">{formatTime(currentTime)}</span>
         <div className="pb-track" onClick={onSeek}>
@@ -43,6 +45,9 @@ export default function PlayerBar({
             <span className="sync-val">{syncOffset >= 0 ? '+' : ''}{syncOffset.toFixed(1)}s</span>
             <button className="sync-btn" onClick={() => onSyncAdjust(0.1)}>+</button>
           </div>
+          <button className="hide-bar-btn" onClick={onToggleHide} title="Sembunyikan Kontrol (H)">
+            ▼ Sembunyikan
+          </button>
         </div>
 
         <div className="pb-center">
