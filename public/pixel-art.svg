@@ -1,12 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="400" height="240" style="background:#0d0a0b; border-radius:16px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);">
   <style>
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+    @keyframes spin-left {
+      from { transform: translate(48px, 37px) rotate(0deg); }
+      to { transform: translate(48px, 37px) rotate(360deg); }
+    }
+    @keyframes spin-right {
+      from { transform: translate(72px, 37px) rotate(0deg); }
+      to { transform: translate(72px, 37px) rotate(360deg); }
     }
     @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
+      0%, 100% { transform: translate(40px, 25px) translateY(0); }
+      50% { transform: translate(40px, 25px) translateY(-4px); }
     }
     @keyframes floatNote1 {
       0% { transform: translate(0, 0) scale(0.8); opacity: 0; }
@@ -19,16 +23,19 @@
       100% { transform: translate(25px, -35px) scale(1.2); opacity: 0; }
     }
     .reel-left {
+      transform: translate(48px, 37px);
       transform-origin: 48px 37px;
-      animation: spin 5s linear infinite;
+      animation: spin-left 5s linear infinite;
     }
     .reel-right {
+      transform: translate(72px, 37px);
       transform-origin: 72px 37px;
-      animation: spin 5s linear infinite;
+      animation: spin-right 5s linear infinite;
     }
     .body {
-      animation: bounce 3s ease-in-out infinite;
+      transform: translate(40px, 25px);
       transform-origin: 100px 95px;
+      animation: bounce 3s ease-in-out infinite;
     }
     .note-1 {
       animation: floatNote1 4s ease-in-out infinite;
@@ -57,7 +64,7 @@
   </g>
 
   <!-- Cassette Body Group -->
-  <g class="body" transform="translate(40, 25)">
+  <g class="body">
     <!-- Outer Shell -->
     <rect x="0" y="0" width="120" height="70" rx="6" fill="#1c1427" stroke="#00f5ff" stroke-width="2" />
     <rect x="6" y="6" width="108" height="58" rx="4" fill="#2d1a47" />
@@ -71,7 +78,7 @@
     <rect x="36" y="26" width="48" height="22" rx="2" fill="#1c1427" stroke="#e8e0ff" stroke-width="1.5" />
     
     <!-- Left Reel -->
-    <g class="reel-left" transform="translate(48, 37)">
+    <g class="reel-left">
       <circle cx="0" cy="0" r="8" fill="#e8e0ff" />
       <rect x="-8" y="-2" width="16" height="4" fill="#2d1a47" />
       <rect x="-2" y="-8" width="4" height="16" fill="#2d1a47" />
@@ -79,7 +86,7 @@
     </g>
     
     <!-- Right Reel -->
-    <g class="reel-right" transform="translate(72, 37)">
+    <g class="reel-right">
       <circle cx="0" cy="0" r="8" fill="#e8e0ff" />
       <rect x="-8" y="-2" width="16" height="4" fill="#2d1a47" />
       <rect x="-2" y="-8" width="4" height="16" fill="#2d1a47" />
