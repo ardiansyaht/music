@@ -586,11 +586,16 @@ export default function App() {
     return !isPlaying;
   };
 
-  const handleSeek = (e) => {
-    const trackRect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - trackRect.left;
-    const pct = clickX / trackRect.width;
-    const target = pct * duration;
+  const handleSeek = (timeOrEvent) => {
+    let target = 0;
+    if (typeof timeOrEvent === 'number') {
+      target = timeOrEvent;
+    } else {
+      const trackRect = timeOrEvent.currentTarget.getBoundingClientRect();
+      const clickX = timeOrEvent.clientX - trackRect.left;
+      const pct = clickX / trackRect.width;
+      target = pct * duration;
+    }
     yt.seekTo(target);
     setCurrentTime(target);
     currentTimeRef.current = target;

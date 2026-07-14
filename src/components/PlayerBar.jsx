@@ -1,8 +1,4 @@
-// ================================================================
-//  Melodia — PlayerBar Component
-//  Controls: ⏮ Prev Track | ⏪ -10s | ▶/⏸ Play | ⏩ +10s | ⏭ Next Track
-// ================================================================
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { formatTime } from '../utils/helpers';
 
 export default function PlayerBar({
@@ -26,13 +22,76 @@ export default function PlayerBar({
   isHidden,
   onToggleHide,
 }) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [localPercent, setLocalPercent] = useState(0);
+  const trackRef = useRef(null);
+
+  // Sync localPercent when not dragging
+  useEffect(() => {
+    if (!isDragging) {
+      setLocalPercent(duration ? (currentTime / duration) * 100 : 0);
+    }
+  }, [currentTime, duration, isDragging]);
+
+  // Helper to calculate percentage from pointer event
+  const getPercentFromEvent = (e) => {
+    if (!trackRef.current) return 0;
+    const rect = trackRef.current.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clickX = clientX - rect.left;
+    return Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+  };
+
+  const handleStartDrag = (e) => {
+    setIsDragging(true);
+    const pct = getPercentFromEvent(e);
+    setLocalPercent(pct);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMove = (e) => {
+      const pct = getPercentFromEvent(e);
+      setLocalPercent(pct);
+    };
+
+    const handleEnd = (e) => {
+      setIsDragging(false);
+      const pct = getPercentFromEvent(e);
+      const targetTime = (pct / 100) * duration;
+      onSeek(targetTime);
+    };
+
+    window.addEventListener('mousemove', handleMove);
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchmove', handleMove);
+    window.addEventListener('touchend', handleEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMove);
+      window.removeEventListener('mouseup', handleEnd);
+      window.removeEventListener('touchmove', handleMove);
+      window.removeEventListener('touchend', handleEnd);
+    };
+  }, [isDragging, duration, onSeek]);
+
+  const displayedTime = isDragging 
+    ? (localPercent / 100) * duration 
+    : currentTime;
+
   return (
     <footer className={`player-bar ${isHidden ? 'bar-hidden' : ''}`}>
       <div className="pb-progress">
-        <span className="pb-time">{formatTime(currentTime)}</span>
-        <div className="pb-track" onClick={onSeek}>
-          <div className="pb-fill" style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}></div>
-          <div className="pb-thumb" style={{ left: `${duration ? (currentTime / duration) * 100 : 0}%` }}></div>
+        <span className="pb-time">{formatTime(displayedTime)}</span>
+        <div 
+          className="pb-track" 
+          ref={trackRef} 
+          onMouseDown={handleStartDrag}
+          onTouchStart={handleStartDrag}
+        >
+          <div className="pb-fill" style={{ width: `${localPercent}%` }}></div>
+          <div className="pb-thumb" style={{ left: `${localPercent}%`, opacity: isDragging ? 1 : '' }}></div>
         </div>
         <span className="pb-time">{formatTime(duration)}</span>
       </div>
