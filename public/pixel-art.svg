@@ -18,13 +18,17 @@
       50% { opacity: 1; }
       100% { transform: translate(25px, -35px) scale(1.2); opacity: 0; }
     }
-    .reel {
-      transform-origin: center;
+    .reel-left {
+      transform-origin: 48px 37px;
+      animation: spin 5s linear infinite;
+    }
+    .reel-right {
+      transform-origin: 72px 37px;
       animation: spin 5s linear infinite;
     }
     .body {
       animation: bounce 3s ease-in-out infinite;
-      transform-origin: bottom center;
+      transform-origin: 100px 95px;
     }
     .note-1 {
       animation: floatNote1 4s ease-in-out infinite;
@@ -67,7 +71,7 @@
     <rect x="36" y="26" width="48" height="22" rx="2" fill="#1c1427" stroke="#e8e0ff" stroke-width="1.5" />
     
     <!-- Left Reel -->
-    <g class="reel" transform="translate(48, 37)">
+    <g class="reel-left" transform="translate(48, 37)">
       <circle cx="0" cy="0" r="8" fill="#e8e0ff" />
       <rect x="-8" y="-2" width="16" height="4" fill="#2d1a47" />
       <rect x="-2" y="-8" width="4" height="16" fill="#2d1a47" />
@@ -75,7 +79,7 @@
     </g>
     
     <!-- Right Reel -->
-    <g class="reel" transform="translate(72, 37)">
+    <g class="reel-right" transform="translate(72, 37)">
       <circle cx="0" cy="0" r="8" fill="#e8e0ff" />
       <rect x="-8" y="-2" width="16" height="4" fill="#2d1a47" />
       <rect x="-2" y="-8" width="4" height="16" fill="#2d1a47" />
