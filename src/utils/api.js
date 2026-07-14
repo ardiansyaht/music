@@ -92,18 +92,27 @@ const deezerJSONP = (url) => {
  */
 export const fetchArtistTracks = async (artist) => {
   try {
-    const data = await deezerJSONP(
-      `https://api.deezer.com/search?q=artist:"${artist}"&limit=15`
+    // Step 1: Search for the exact artist ID to avoid fuzzy keyword matches
+    const artistSearch = await deezerJSONP(
+      `https://api.deezer.com/search/artist?q=${encodeURIComponent(artist)}&limit=1`
     );
-    if (data.data && data.data.length > 0) {
-      return data.data.map(track => ({
-        title: track.title,
-        artist: track.artist.name,
-        album: track.album.title,
-        thumbnail: track.album.cover_medium,
-        videoId: null, // to be resolved on Piped when clicked
-        duration: track.duration
-      }));
+    if (artistSearch.data && artistSearch.data.length > 0) {
+      const artistId = artistSearch.data[0].id;
+      
+      // Step 2: Fetch that specific artist's top tracks
+      const topTracks = await deezerJSONP(
+        `https://api.deezer.com/artist/${artistId}/top?limit=15`
+      );
+      if (topTracks.data && topTracks.data.length > 0) {
+        return topTracks.data.map(track => ({
+          title: track.title,
+          artist: track.artist.name,
+          album: track.album?.title || '',
+          thumbnail: track.album?.cover_medium || '',
+          videoId: null, // to be resolved on Piped when clicked
+          duration: track.duration
+        }));
+      }
     }
   } catch (e) {
     console.error('Deezer artist tracks fetch failed:', e);
