@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Animated Pixel Art Cassette Tape -->
-<img src="./public/pixel-art.svg?v=2" width="360" alt="Melodia Pixel Art Animation" />
+<img src="./public/pixel-art.svg?v=3" width="360" alt="Melodia Pixel Art Animation" />
 
 # 🎵 Melodia
 
