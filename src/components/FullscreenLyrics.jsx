@@ -1,8 +1,8 @@
 // ================================================================
 //  Melodia — FullscreenLyrics Component
-//  Controls auto-hide after 3s (Netflix / Apple Music style)
+//  Bottom controls auto-hide after 3s, header always visible
 // ================================================================
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { formatTime } from '../utils/helpers';
 
 export default function FullscreenLyrics({
@@ -24,14 +24,12 @@ export default function FullscreenLyrics({
   const [showControls, setShowControls] = useState(false);
   const hideTimerRef = useRef(null);
 
-  // Clear timer on unmount
   useEffect(() => {
     return () => {
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     };
   }, []);
 
-  // Always start hidden when entering fullscreen
   useEffect(() => {
     if (!isActive) {
       setShowControls(false);
@@ -39,31 +37,26 @@ export default function FullscreenLyrics({
     }
   }, [isActive]);
 
-  const startHideTimer = () => {
+  const startHideTimer = useCallback(() => {
     if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
     hideTimerRef.current = setTimeout(() => {
       setShowControls(false);
     }, 3000);
-  };
+  }, []);
 
-  // Click/tap anywhere on overlay to toggle controls visibility
-  const handleOverlayClick = (e) => {
-    if (e.target.closest('.fs-ctrl-btn, .fs-close, .fs-lyric-line, .fs-track')) return;
-    if (showControls) {
-      setShowControls(false);
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-    } else {
-      setShowControls(true);
-      startHideTimer();
-    }
-  };
+  const handleMouseMove = useCallback(() => {
+    setShowControls(true);
+    startHideTimer();
+  }, [startHideTimer]);
 
   return (
     <div
       className={`fullscreen-overlay ${isActive ? 'active' : ''}`}
-      onClick={handleOverlayClick}
+      onMouseMove={handleMouseMove}
+      onTouchStart={handleMouseMove}
     >
-      <div className={`fs-header ${showControls ? 'visible' : 'hidden'}`}>
+      {/* Header always visible */}
+      <div className="fs-header">
         <div className="fs-song-info">
           {songInfo.thumbnail ? (
             <img className="fs-art" src={songInfo.thumbnail} alt="Art" />
@@ -92,6 +85,7 @@ export default function FullscreenLyrics({
         ))}
       </div>
 
+      {/* Bottom controls: auto-hide after 3s */}
       <div className={`fs-controls ${showControls ? 'visible' : 'hidden'}`}>
         <button className="fs-ctrl-btn" onClick={onRewind} title="Mundur 10s">⏪</button>
         <button className="fs-ctrl-btn fs-ctrl-play" onClick={onPlayToggle} title={isPlaying ? 'Jeda' : 'Putar'}>

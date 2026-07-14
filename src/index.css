@@ -581,17 +581,6 @@ body{font-family:var(--font-body);color:var(--text-1);background:var(--bg-primar
   justify-content:space-between;
   padding:1rem 1.5rem;
   flex-shrink:0;
-  transition: opacity .4s ease, transform .4s ease;
-}
-.fs-header.hidden{
-  opacity:0;
-  transform:translateY(-20px);
-  pointer-events:none;
-}
-.fs-header.visible{
-  opacity:1;
-  transform:translateY(0);
-  pointer-events:auto;
 }
 
 .fs-song-info{
