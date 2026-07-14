@@ -39,12 +39,6 @@ export default function PlayerBar({
 
       <div className="pb-controls">
         <div className="pb-left">
-          <div className="sync-adjust">
-            <span className="sync-lbl">Sync</span>
-            <button className="sync-btn" onClick={() => onSyncAdjust(-0.1)}>−</button>
-            <span className="sync-val">{syncOffset >= 0 ? '+' : ''}{syncOffset.toFixed(1)}s</span>
-            <button className="sync-btn" onClick={() => onSyncAdjust(0.1)}>+</button>
-          </div>
           <button className="hide-bar-btn" onClick={onToggleHide} title="Sembunyikan Kontrol (H)">
             ▼ Sembunyikan
           </button>
