@@ -1,7 +1,8 @@
 // ================================================================
 //  Melodia — FullscreenLyrics Component
+//  Controls auto-hide after 3s (Netflix / Apple Music style)
 // ================================================================
-import React from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { formatTime } from '../utils/helpers';
 
 export default function FullscreenLyrics({
@@ -20,9 +21,54 @@ export default function FullscreenLyrics({
   onForward,
   onSeek,
 }) {
+  const [showControls, setShowControls] = useState(false);
+  const hideTimerRef = useRef(null);
+
+  // Clear timer on unmount
+  useEffect(() => {
+    return () => {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    };
+  }, []);
+
+  // Reset controls visibility when entering/leaving fullscreen
+  useEffect(() => {
+    if (isActive) {
+      setShowControls(true);
+      startHideTimer();
+    } else {
+      setShowControls(false);
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    }
+  }, [isActive]);
+
+  const startHideTimer = useCallback(() => {
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => {
+      setShowControls(false);
+    }, 3000);
+  }, []);
+
+  const handleInteraction = useCallback(() => {
+    setShowControls(true);
+    startHideTimer();
+  }, [startHideTimer]);
+
+  // Clicking on the overlay background toggles play/pause
+  const handleOverlayClick = (e) => {
+    // Don't trigger if clicking on buttons, lyric lines, close btn, or header
+    if (e.target.closest('.fs-ctrl-btn, .fs-close, .fs-header, .fs-lyric-line, .fs-track')) return;
+    handleInteraction();
+  };
+
   return (
-    <div className={`fullscreen-overlay ${isActive ? 'active' : ''}`}>
-      <div className="fs-header">
+    <div
+      className={`fullscreen-overlay ${isActive ? 'active' : ''}`}
+      onMouseMove={handleInteraction}
+      onTouchStart={handleInteraction}
+      onClick={handleOverlayClick}
+    >
+      <div className={`fs-header ${showControls ? 'visible' : 'hidden'}`}>
         <div className="fs-song-info">
           {songInfo.thumbnail ? (
             <img className="fs-art" src={songInfo.thumbnail} alt="Art" />
@@ -51,7 +97,7 @@ export default function FullscreenLyrics({
         ))}
       </div>
 
-      <div className="fs-controls">
+      <div className={`fs-controls ${showControls ? 'visible' : 'hidden'}`}>
         <button className="fs-ctrl-btn" onClick={onRewind} title="Mundur 10s">⏪</button>
         <button className="fs-ctrl-btn fs-ctrl-play" onClick={onPlayToggle} title={isPlaying ? 'Jeda' : 'Putar'}>
           {isPlaying ? '⏸' : '▶'}
