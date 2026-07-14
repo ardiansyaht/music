@@ -6,7 +6,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LYRICS_DATA } from './lyrics';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
 import { searchPiped, searchLRCLIB, fetchDeezerArt, fetchArtistTracks } from './utils/api';
-import { parseLRC, extractVideoId, prioritizeLyricVideos } from './utils/helpers';
+import { parseLRC, extractVideoId, prioritizeLyricVideos, cleanArtistName } from './utils/helpers';
 
 import TopBar from './components/TopBar';
 import HomePage from './components/HomePage';
@@ -378,8 +378,9 @@ export default function App() {
   const fetchRecommendations = async (artist, currentTitle) => {
     setIsLoadingRecs(true);
     setRecommendations([]);
+    const cleanedArtist = cleanArtistName(artist);
     try {
-      const recs = await fetchArtistTracks(artist);
+      const recs = await fetchArtistTracks(cleanedArtist);
       if (recs.length > 0) {
         // Filter out the current playing song to avoid immediate repeating
         const filtered = recs.filter(

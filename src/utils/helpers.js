@@ -60,3 +60,17 @@ export const prioritizeLyricVideos = (playlist) => {
     return 0;
   });
 };
+
+/**
+ * Clean common YouTube uploader suffixes to get the clean artist name
+ */
+export const cleanArtistName = (name) => {
+  if (!name) return '';
+  let clean = name.replace(/\s*-\s*Topic$/i, '');
+  clean = clean.replace(/VEVO$/i, '');
+  clean = clean.replace(/\s*Official\s*$/i, '');
+  clean = clean.replace(/\s*Music\s*$/i, '');
+  clean = clean.replace(/\s*Channel\s*$/i, '');
+  clean = clean.replace(/\s*Records\s*$/i, '');
+  return clean.trim();
+};
