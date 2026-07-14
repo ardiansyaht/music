@@ -2,7 +2,7 @@
    Melodia — Premium Immersive Synced Lyrics Player
    Full-length audio via YouTube (hidden) + Synced lyrics via LRCLIB
    ================================================================ */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Syne:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   --bg-primary: #fdf2f0;
@@ -23,6 +23,7 @@
   --font-body: 'Inter', -apple-system, sans-serif;
   --font-display: 'Syne', sans-serif;
   --font-mono: 'Space Mono', monospace;
+  --font-lyric: 'Outfit', sans-serif;
   --radius-s: 10px;
   --radius-m: 16px;
   --radius-l: 24px;
@@ -38,6 +39,7 @@
   --accent:#ff007f;--accent-glow:rgba(255,0,127,.5);--vinyl-gradient:linear-gradient(135deg,#ff007f,#00f5ff);
   --vis-color-1:#00f5ff;--vis-color-2:#ff007f;
   --font-body:'Space Mono',monospace;
+  --font-lyric:'Space Mono',monospace;
   --scanlines:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.2) 2px,rgba(0,0,0,.2) 4px);
   --crt-vignette:radial-gradient(circle,transparent 55%,rgba(0,0,0,.5) 100%);
   --slider-track-bg: rgba(0, 245, 255, 0.2);
@@ -48,6 +50,7 @@
   --text-1:#e8e0ff;--text-2:rgba(232,224,255,.4);--text-3:rgba(232,224,255,.15);
   --accent:#00ffcc;--accent-glow:rgba(0,255,204,.4);--vinyl-gradient:linear-gradient(135deg,#9356dc,#00ffcc);
   --vis-color-1:#9356dc;--vis-color-2:#00ffcc;
+  --font-lyric:'Outfit',sans-serif;
   --slider-track-bg: rgba(232, 224, 255, 0.2);
 }
 [data-theme="cyber"] {
@@ -57,6 +60,7 @@
   --accent:#ff0055;--accent-glow:rgba(255,0,85,.5);--vinyl-gradient:linear-gradient(135deg,#ff0055,#fdee30);
   --vis-color-1:#fdee30;--vis-color-2:#ff0055;
   --font-body:'Space Mono',monospace;
+  --font-lyric:'Plus Jakarta Sans',sans-serif;
   --slider-track-bg: rgba(253, 238, 48, 0.25);
 }
 
@@ -365,10 +369,11 @@ body{font-family:var(--font-body);color:var(--text-1);background:var(--bg-primar
 .lyrics-scroll::-webkit-scrollbar{width:0}
 
 .lyric-line {
-  font-family: var(--font-display);
-  font-size: 1.45rem;
+  font-family: var(--font-lyric);
+  font-size: 1.55rem;
   font-weight: 700;
-  line-height: 1.6;
+  letter-spacing: -0.5px;
+  line-height: 1.5;
   padding: 0.55rem 0.8rem;
   color: var(--text-1);
   opacity: 0.35;
@@ -389,7 +394,9 @@ body{font-family:var(--font-body);color:var(--text-1);background:var(--bg-primar
 .lyric-line.active {
   color: var(--text-1);
   opacity: 1;
-  transform: scale(1.14) translateX(10px);
+  font-weight: 850;
+  letter-spacing: -0.8px;
+  transform: scale(1.12) translateX(10px);
   text-shadow: 0 0 25px var(--accent-glow);
 }
 .lyric-line.instrumental {
@@ -654,10 +661,11 @@ body{font-family:var(--font-body);color:var(--text-1);background:var(--bg-primar
 .fs-lyrics-scroll::-webkit-scrollbar{width:0}
 
 .fs-lyric-line{
-  font-family:var(--font-display);
-  font-size:2rem;
-  font-weight:800;
-  line-height:1.6;
+  font-family: var(--font-lyric);
+  font-size: 2.3rem;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.45;
   padding:.6rem 1.2rem;
   color:rgba(255,255,255,.2);
   cursor:pointer;
@@ -672,7 +680,9 @@ body{font-family:var(--font-body);color:var(--text-1);background:var(--bg-primar
 }
 .fs-lyric-line.active{
   color:#fff;
-  transform:scale(1.12);
+  font-weight: 900;
+  letter-spacing: -1.2px;
+  transform:scale(1.1);
   text-shadow:0 0 40px var(--accent-glow),0 0 80px var(--accent-glow);
 }
 .fs-lyric-line.instrumental{
