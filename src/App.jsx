@@ -350,7 +350,7 @@ export default function App() {
         const candidates = results.map(r => ({
           videoId: extractVideoId(r.url), title: r.title, artist: r.uploaderName
         })).filter(r => r.videoId && r.videoId !== trackInfo.videoId);
-        setCurrentPlaylist(prev => prev.concat(prioritizeLyricVideos(candidates)));
+        setCurrentPlaylist(prev => prev.concat(prioritizeLyricVideos(candidates, trackInfo.artist)));
       }).catch(() => {});
     } else {
       // Search for playable video
@@ -359,7 +359,7 @@ export default function App() {
           const candidates = results.map(r => ({
             videoId: extractVideoId(r.url), title: r.title, artist: r.uploaderName
           })).filter(r => r.videoId);
-          const sorted = prioritizeLyricVideos(candidates);
+          const sorted = prioritizeLyricVideos(candidates, trackInfo.artist);
           setCurrentPlaylist(sorted);
           setCurrentPlaylistIndex(0);
           if (sorted.length > 0) {

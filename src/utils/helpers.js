@@ -41,24 +41,42 @@ export const extractVideoId = (url) => {
   return match ? match[1] : null;
 };
 
-/**
- * Sort playlist candidates, prioritizing lyric videos and deprioritizing live/covers
- */
-export const prioritizeLyricVideos = (playlist) => {
-  return [...playlist].sort((a, b) => {
-    const keywords = ['lyrics', 'lirik', 'sub', 'subtitulos', 'karaoke', 'fan'];
-    const aMatch = keywords.some(k => a.title.toLowerCase().includes(k));
-    const bMatch = keywords.some(k => b.title.toLowerCase().includes(k));
-    if (aMatch && !bMatch) return -1;
-    if (!aMatch && bMatch) return 1;
+export const prioritizeLyricVideos = (playlist, artistName = '') => {
+  const cleanArtist = artistName ? cleanArtistName(artistName).toLowerCase() : '';
 
-    const liveKeywords = ['live', 'cover', 'interview', 'talk', 'session'];
-    const aLive = liveKeywords.some(k => a.title.toLowerCase().includes(k));
-    const bLive = liveKeywords.some(k => b.title.toLowerCase().includes(k));
-    if (aLive && !bLive) return 1;
-    if (!aLive && bLive) return -1;
-    return 0;
-  });
+  const getScore = (item) => {
+    const title = item.title.toLowerCase();
+    let score = 0;
+
+    // Prioritize if it contains the artist name
+    if (cleanArtist && title.includes(cleanArtist)) {
+      score += 20;
+    }
+
+    // Prioritize official releases
+    if (title.includes('official audio') || title.includes('official lyric') || title.includes('official video') || title.includes('official music video')) {
+      score += 25;
+    }
+
+    // Prioritize lyrics videos
+    if (title.includes('lyrics') || title.includes('lirik') || title.includes('sub') || title.includes('subtitle') || title.includes('translation')) {
+      score += 15;
+    }
+
+    // HEAVILY DEPRIORITIZE karaoke, instrumental, backing tracks, covers, tributes
+    if (title.includes('karaoke') || title.includes('instrumental') || title.includes('backing track') || title.includes('cover') || title.includes('tribute') || title.includes('piano') || title.includes('guitar') || title.includes('acoustic cover') || title.includes('instrumental version')) {
+      score -= 100;
+    }
+
+    // Deprioritize live concert / interviews
+    if (title.includes('live') || title.includes('concert') || title.includes('interview') || title.includes('talk') || title.includes('session')) {
+      score -= 15;
+    }
+
+    return score;
+  };
+
+  return [...playlist].sort((a, b) => getScore(b) - getScore(a));
 };
 
 /**
