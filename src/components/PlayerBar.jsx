@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { formatTime } from '../utils/helpers';
-import './PlayerBar.css';
+import '../styles/PlayerBar.css';
 
 export default function PlayerBar({
   currentTime,

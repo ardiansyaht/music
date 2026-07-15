@@ -146,7 +146,7 @@ music/
     ├── main.jsx                # React mount point
     ├── App.jsx                 # 🎯 Main Shell & global state orchestrator
     ├── constants.js            # ⚙️ Konstanta & Quick Suggestions
-    ├── components/             # 🧱 Komponen UI Terpisah
+    ├── components/             # 🧱 Komponen UI Terpisah (Hanya JSX)
     │   ├── TopBar.jsx          # Header search & theme switcher
     │   ├── HomePage.jsx        # Landing page dashboard
     │   ├── NowPlaying.jsx      # Info lagu & cover art aktif
@@ -156,7 +156,21 @@ music/
     │   ├── RecommendedPanel.jsx# Panel rekomendasi lagu artis sejenis
     │   ├── PlayerBar.jsx       # Kontrol audio (Play, Prev, Next, Seek)
     │   ├── PlaylistModal.jsx   # 📂 Modal impor playlist (BETA)
-    │   └── PlaylistModal.css   # Styling kaca glassmorphic playlist modal
+    │   └── Toast.jsx           # Komponen pop-up notifikasi toast
+    ├── styles/                 # 🎨 Folder Styling Terpisah (Hanya CSS)
+    │   ├── index.css           # CSS global reset & token tema
+    │   ├── App.css             # CSS khusus untuk layout App shell
+    │   ├── TopBar.css          # Styling untuk header search
+    │   ├── HomePage.css        # Styling untuk dashboard
+    │   ├── NowPlaying.css      # Styling untuk panel deskripsi lagu
+    │   ├── Visualizer.css      # Styling visualizer
+    │   ├── LyricsPanel.css     # Styling lirik luring & sinkron
+    │   ├── FullscreenLyrics.css# Styling overlay lirik
+    │   ├── RecommendedPanel.css# Styling panel rekomendasi artis
+    │   ├── PlayerBar.css       # Styling bar pemutar audio
+    │   ├── PlaylistModal.css   # Styling kaca glassmorphic playlist modal
+    │   ├── AlbumsDrawer.css    # Styling drawer album discography
+    │   └── Toast.css           # Styling notifikasi toast
     ├── hooks/
     │   └── useYouTubePlayer.js # 🎣 Custom hook manajemen YouTube IFrame API
     └── utils/

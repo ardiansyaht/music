@@ -3,7 +3,7 @@
 //  Shows recommended songs from the same artist (sidebar)
 // ================================================================
 import React from 'react';
-import './RecommendedPanel.css';
+import '../styles/RecommendedPanel.css';
 
 export default function RecommendedPanel({ recommendations, currentVideoId, onSelectTrack, isLoading }) {
   if (recommendations.length === 0 && !isLoading) return null;

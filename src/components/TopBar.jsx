@@ -3,7 +3,7 @@
 // ================================================================
 import React from 'react';
 import { formatTime } from '../utils/helpers';
-import './TopBar.css';
+import '../styles/TopBar.css';
 
 export default function TopBar({
   theme,

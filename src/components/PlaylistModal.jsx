@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchSpotifyPlaylistTracks, fetchPipedPlaylist, spotifyAuthRedirect } from '../utils/api';
-import './PlaylistModal.css';
+import '../styles/PlaylistModal.css';
 
 export default function PlaylistModal({ isOpen, onClose, onImportQueue }) {
   const [playlistUrl, setPlaylistUrl] = useState('');

@@ -18,7 +18,7 @@ import FullscreenLyrics from './components/FullscreenLyrics';
 import RecommendedPanel from './components/RecommendedPanel';
 import Toast from './components/Toast';
 import PlaylistModal from './components/PlaylistModal';
-import './components/AlbumsDrawer.css';
+import './styles/AlbumsDrawer.css';
 
 export default function App() {
   // ── Theme ──

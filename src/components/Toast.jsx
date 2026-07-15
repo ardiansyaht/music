@@ -2,7 +2,7 @@
 //  Melodia — Toast Notification Component
 // ================================================================
 import React from 'react';
-import './Toast.css';
+import '../styles/Toast.css';
 
 export default function Toast({ message, icon, isVisible }) {
   return (

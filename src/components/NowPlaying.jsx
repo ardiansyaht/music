@@ -2,7 +2,7 @@
 //  Melodia — NowPlaying Component
 // ================================================================
 import React from 'react';
-import './NowPlaying.css';
+import '../styles/NowPlaying.css';
 
 export default function NowPlaying({ songInfo, isPlaying, isLoading, onShowAlbums }) {
   if (isLoading) {
