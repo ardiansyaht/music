@@ -76,7 +76,7 @@ export const spotifyAuthRedirect = async (clientId) => {
   localStorage.setItem('spotify-code-verifier', codeVerifier);
 
   const codeChallenge = await generateCodeChallenge(codeVerifier);
-  const origin = window.location.origin;
+  const origin = window.location.origin + window.location.pathname;
   const redirectUri = encodeURIComponent(origin);
   const scope = encodeURIComponent('playlist-read-private playlist-read-collaborative');
   
@@ -92,7 +92,7 @@ export const spotifyAuthRedirect = async (clientId) => {
  */
 export const exchangeSpotifyCodeForToken = async (code, clientId) => {
   const codeVerifier = localStorage.getItem('spotify-code-verifier');
-  const origin = window.location.origin;
+  const origin = window.location.origin + window.location.pathname;
 
   const res = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
