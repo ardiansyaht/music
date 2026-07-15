@@ -5,7 +5,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LYRICS_DATA } from './lyrics';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
-import { searchPiped, searchLRCLIB, fetchDeezerArt, fetchArtistTracks, fetchArtistAlbums, fetchAlbumTracks } from './utils/api';
+import { searchPiped, searchLRCLIB, fetchDeezerArt, fetchArtistTracks, fetchArtistAlbums, fetchAlbumTracks, exchangeSpotifyCodeForToken } from './utils/api';
 import { parseLRC, extractVideoId, prioritizeLyricVideos, cleanArtistName, formatTime } from './utils/helpers';
 
 import TopBar from './components/TopBar';
@@ -154,34 +154,42 @@ export default function App() {
   useEffect(() => { currentPlaylistRef.current = currentPlaylist; }, [currentPlaylist]);
   useEffect(() => { currentPlaylistIndexRef.current = currentPlaylistIndex; }, [currentPlaylistIndex]);
 
-  // ── Parse Spotify Callback Token ──
+  // ── Parse Spotify Callback Code (PKCE) ──
   useEffect(() => {
-    const hash = window.location.hash;
-    if (hash && hash.includes('access_token=')) {
-      const params = new URLSearchParams(hash.substring(1));
-      const accessToken = params.get('access_token');
-      const expiresIn = params.get('expires_in');
-      const state = params.get('state');
-      const savedState = localStorage.getItem('spotify-auth-state');
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const state = params.get('state');
+    const savedState = localStorage.getItem('spotify-auth-state');
 
-      if (accessToken && state === savedState) {
-        localStorage.setItem('spotify-access-token', accessToken);
-        const expiryTime = Date.now() + parseInt(expiresIn) * 1000;
-        localStorage.setItem('spotify-token-expiry', expiryTime.toString());
-        
-        showToast('Spotify Berhasil Diotorisasi!', 'success');
+    if (code && state === savedState) {
+      const clientId = '2185a7427e234419aff3694b9f668139';
+      
+      exchangeSpotifyCodeForToken(code, clientId)
+        .then(data => {
+          localStorage.setItem('spotify-access-token', data.access_token);
+          const expiryTime = Date.now() + parseInt(data.expires_in) * 1000;
+          localStorage.setItem('spotify-token-expiry', expiryTime.toString());
+          
+          showToast('Spotify Berhasil Diotorisasi!', 'success');
 
-        // Clear hash from URL cleanly
-        window.history.replaceState(null, null, window.location.pathname);
+          // Clear search query parameters from URL cleanly
+          window.history.replaceState(null, null, window.location.pathname);
 
-        // Resume pending playlist loading if any
-        const pendingUrl = localStorage.getItem('spotify-pending-url');
-        if (pendingUrl) {
-          localStorage.removeItem('spotify-pending-url');
-          setIsPlaylistModalOpen(true);
-        }
-      }
-      localStorage.removeItem('spotify-auth-state');
+          // Resume pending playlist loading if any
+          const pendingUrl = localStorage.getItem('spotify-pending-url');
+          if (pendingUrl) {
+            localStorage.removeItem('spotify-pending-url');
+            setIsPlaylistModalOpen(true);
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          showToast('Gagal otorisasi Spotify', 'error');
+        })
+        .finally(() => {
+          localStorage.removeItem('spotify-auth-state');
+          localStorage.removeItem('spotify-code-verifier');
+        });
     }
   }, []);
 

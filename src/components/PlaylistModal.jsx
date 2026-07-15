@@ -4,19 +4,11 @@ import './PlaylistModal.css';
 
 export default function PlaylistModal({ isOpen, onClose, onImportQueue }) {
   const [playlistUrl, setPlaylistUrl] = useState('');
-  const [spotifyClientId, setSpotifyClientId] = useState(() => {
-    return localStorage.getItem('spotify-client-id') || '2185a7427e234419aff3694b9f668139';
-  });
+  const spotifyClientId = '2185a7427e234419aff3694b9f668139';
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [tracksPreview, setTracksPreview] = useState([]);
   const [playlistTitle, setPlaylistTitle] = useState('');
-  const [showConfig, setShowConfig] = useState(false);
-
-  // Sync client ID with localStorage
-  useEffect(() => {
-    localStorage.setItem('spotify-client-id', spotifyClientId);
-  }, [spotifyClientId]);
 
   if (!isOpen) return null;
 
@@ -62,14 +54,6 @@ export default function PlaylistModal({ isOpen, onClose, onImportQueue }) {
 
         // Check if token exists and is valid
         if (!accessToken || !tokenExpiry || now > parseInt(tokenExpiry)) {
-          // Token is missing or expired, we need to authorize
-          if (!spotifyClientId) {
-            setError('Masukkan Spotify Client ID Anda terlebih dahulu pada panel pengaturan di bawah!');
-            setLoading(false);
-            setShowConfig(true);
-            return;
-          }
-          
           // Save playlist url to resume after redirection
           localStorage.setItem('spotify-pending-url', playlistUrl);
           spotifyAuthRedirect(spotifyClientId);
@@ -133,37 +117,7 @@ export default function PlaylistModal({ isOpen, onClose, onImportQueue }) {
 
           {error && <div className="pl-error">{error}</div>}
 
-          {/* Config Settings (Collapsible) */}
-          <div className="pl-config-section">
-            <button 
-              className="pl-config-toggle" 
-              onClick={() => setShowConfig(!showConfig)}
-            >
-              ⚙️ Pengaturan Spotify Client ID {showConfig ? '▲' : '▼'}
-            </button>
 
-            {showConfig && (
-              <div className="pl-config-body">
-                <p className="pl-help-text">
-                  Untuk memuat playlist Spotify, Anda membutuhkan **Client ID** (Gratis). 
-                  Cara dapatkan dalam 1 menit:
-                  <br />
-                  1. Masuk ke [developer.spotify.com](https://developer.spotify.com/dashboard).
-                  2. Buat App baru, beri nama bebas.
-                  3. Di pengaturan App, tambahkan **Redirect URI**: <code>{window.location.origin}/</code>
-                  4. Copy **Client ID** dan paste di bawah ini.
-                </p>
-                <div className="pl-client-id-row">
-                  <input
-                    type="text"
-                    placeholder="Masukkan Spotify Client ID Anda..."
-                    value={spotifyClientId}
-                    onChange={(e) => setSpotifyClientId(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* Playlist Preview */}
           {tracksPreview.length > 0 && (

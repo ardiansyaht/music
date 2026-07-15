@@ -43,18 +43,75 @@ export const fetchSpotifyPlaylistTracks = async (playlistId, accessToken) => {
   }
 };
 
+// PKCE Helpers
+const generateRandomString = (length) => {
+  let text = '';
+  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  for (let i = 0; i < length; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  }
+  return text;
+};
+
+const generateCodeChallenge = async (codeVerifier) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(codeVerifier);
+  const digest = await window.crypto.subtle.digest('SHA-256', data);
+  const byteArray = new Uint8Array(digest);
+  let binary = '';
+  for (let i = 0; i < byteArray.byteLength; i++) {
+    binary += String.fromCharCode(byteArray[i]);
+  }
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+};
+
 /**
- * Redirect window to Spotify accounts authorization page
+ * Redirect window to Spotify accounts authorization page (PKCE)
  */
-export const spotifyAuthRedirect = (clientId) => {
+export const spotifyAuthRedirect = async (clientId) => {
+  const codeVerifier = generateRandomString(64);
+  localStorage.setItem('spotify-code-verifier', codeVerifier);
+
+  const codeChallenge = await generateCodeChallenge(codeVerifier);
   const origin = window.location.origin + '/';
   const redirectUri = encodeURIComponent(origin);
   const scope = encodeURIComponent('playlist-read-private playlist-read-collaborative');
   
-  // Use unique state to prevent CSRF
   const state = Math.random().toString(36).substring(2, 15);
   localStorage.setItem('spotify-auth-state', state);
 
-  const url = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(clientId)}&response_type=token&redirect_uri=${redirectUri}&scope=${scope}&state=${state}`;
+  const url = `https://accounts.spotify.com/authorize?client_id=${encodeURIComponent(clientId)}&response_type=code&redirect_uri=${redirectUri}&scope=${scope}&state=${state}&code_challenge_method=S256&code_challenge=${codeChallenge}`;
   window.location.href = url;
+};
+
+/**
+ * Exchange Spotify Authorization Code for Access Token (PKCE)
+ */
+export const exchangeSpotifyCodeForToken = async (code, clientId) => {
+  const codeVerifier = localStorage.getItem('spotify-code-verifier');
+  const origin = window.location.origin + '/';
+
+  const res = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: new URLSearchParams({
+      client_id: clientId,
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: origin,
+      code_verifier: codeVerifier
+    })
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error_description || 'Gagal menukarkan Spotify token.');
+  }
+
+  return await res.json();
 };
