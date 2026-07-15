@@ -463,7 +463,7 @@ export default function App() {
     currentLyricIndexRef.current = -1;
   };
 
-  const playTrackByInfo = async (trackInfo, addToHistory = true) => {
+  const playTrackByInfo = async (trackInfo, addToHistory = true, overwriteQueue = true) => {
     setCurrentView('player');
     setIsLoadingTrack(true);
 
@@ -529,11 +529,11 @@ export default function App() {
     }
 
     // Fetch recommendations from same artist & build queue with them
-    fetchRecommendations(trackInfo.artist, trackInfo.title);
+    fetchRecommendations(trackInfo.artist, trackInfo.title, overwriteQueue);
   };
 
   // ── Fetch same-artist recommendations ──
-  const fetchRecommendations = async (artist, currentTitle) => {
+  const fetchRecommendations = async (artist, currentTitle, overwriteQueue = true) => {
     setIsLoadingRecs(true);
     setRecommendations([]);
     const cleanedArtist = cleanArtistName(artist);
@@ -546,8 +546,10 @@ export default function App() {
         );
         setRecommendations(filtered);
         
-        // Populate upcoming songQueue with these recommended tracks from same artist
-        setSongQueue(filtered);
+        // Populate upcoming songQueue with these recommended tracks from same artist if required
+        if (overwriteQueue) {
+          setSongQueue(filtered);
+        }
       }
     } catch (e) {
       console.error('Error fetching artist recommendations:', e);
@@ -574,7 +576,7 @@ export default function App() {
     if (tracks.length === 0) return;
     const [first, ...rest] = tracks;
     setSongQueue(rest);
-    playTrackByInfo(first);
+    playTrackByInfo(first, true, false); // pass false to avoid overwriting queue
     showToast(`Mengimpor ${tracks.length} lagu!`, 'success');
   };
 

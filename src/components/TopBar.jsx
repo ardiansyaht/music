@@ -32,7 +32,7 @@ export default function TopBar({
             type="text"
             placeholder="Cari lagu atau artis..."
             value={searchQuery}
-            onChange={(e) => onSearchInput(e.target.value)}
+            onChange={onSearchInput}
           />
           {searchQuery && (
             <button className="clear-search-btn" onClick={onClearSearch}>
