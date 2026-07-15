@@ -5,7 +5,7 @@ import './PlaylistModal.css';
 export default function PlaylistModal({ isOpen, onClose, onImportQueue }) {
   const [playlistUrl, setPlaylistUrl] = useState('');
   const [spotifyClientId, setSpotifyClientId] = useState(() => {
-    return localStorage.getItem('spotify-client-id') || '';
+    return localStorage.getItem('spotify-client-id') || '2185a7427e234419aff3694b9f668139';
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
