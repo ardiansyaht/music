@@ -598,19 +598,25 @@ export default function App() {
     if (songQueue.length > 0) {
       const [next, ...rest] = songQueue;
       setSongQueue(rest);
-      playTrackByInfo(next);
+      playTrackByInfo(next, true, false); // pass false to avoid overwriting queue
     } else {
       // Try to build a new queue from the current song
       if (songInfo.artist && songInfo.title) {
-        buildQueue(songInfo.artist, songInfo.title).then(() => {
-          setSongQueue(prev => {
-            if (prev.length > 0) {
-              const [next, ...rest] = prev;
-              playTrackByInfo(next);
-              return rest;
+        const cleanedArtist = cleanArtistName(songInfo.artist);
+        fetchArtistTracks(cleanedArtist).then(recs => {
+          if (recs && recs.length > 0) {
+            const filtered = recs.filter(
+              r => r.title.toLowerCase().trim() !== songInfo.title.toLowerCase().trim()
+            );
+            if (filtered.length > 0) {
+              const [next, ...rest] = filtered;
+              setSongQueue(rest);
+              playTrackByInfo(next, true, false); // pass false to avoid overwriting queue
+              setRecommendations(filtered);
             }
-            return prev;
-          });
+          }
+        }).catch(err => {
+          console.error('Error auto-playing next track from recommendations:', err);
         });
       }
     }
@@ -621,7 +627,7 @@ export default function App() {
     if (songQueue.length > 0) {
       const [next, ...rest] = songQueue;
       setSongQueue(rest);
-      playTrackByInfo(next);
+      playTrackByInfo(next, true, false); // pass false to avoid overwriting queue
     }
   };
 
@@ -634,7 +640,7 @@ export default function App() {
       if (songInfo.title) {
         setSongQueue(q => [{ ...songInfo }, ...q]);
       }
-      playTrackByInfo(prev, false); // don't add to history again
+      playTrackByInfo(prev, false, false); // don't add to history again, don't overwrite queue
     }
   };
 
