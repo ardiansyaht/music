@@ -34,11 +34,42 @@
 💬  Artist Recommendations      Panel rekomendasi lagu lain dari penyanyi yang sama secara real-time
 🔁  Smart Auto-Play             Lagu berikutnya otomatis diputar ketika lagu aktif selesai
 ⏮/⏭ Track Navigation          Navigasi mudah ke lagu sebelum/sesudah dalam riwayat putar
+📁  Playlist Importer (Beta)    Impor playlist Anda dari Spotify dan YouTube langsung ke antrean
 💾  State Persistence           Menyimpan antrean, lirik, dan status halaman di localStorage (aman dari refresh)
 🎨  4 premium themes            Pastel Dream · Retro VHS · Dark Space · Cyberpunk
 📊  Live visualizer             Animasi audio bars 60fps di canvas
 🔧  Sync offset                 Geser timing lirik ± 0.1 detik jika tidak pas
 ```
+
+---
+
+## 📂 Fitur Impor Playlist — Spotify & YouTube (BETA)
+
+Fitur Impor Playlist memungkinkan Anda memasukkan daftar lagu dari playlist YouTube atau Spotify ke dalam antrean lagu Melodia Anda.
+
+> [!IMPORTANT]
+> **Status Fitur: BETA**
+> Fitur ini masih dalam tahap uji coba awal. Silakan baca petunjuk integrasi berikut untuk memastikan koneksi lancar.
+
+### 🎥 Impor Playlist YouTube
+* Cukup salin URL playlist YouTube publik (misal: `https://www.youtube.com/playlist?list=PL...`) lalu tempelkan ke modal impor playlist.
+* Aplikasi akan mengambil video di dalam playlist secara dinamis melalui server Piped dan memutarnya satu per satu.
+
+### 🟢 Impor Playlist Spotify (PKCE Auth Flow)
+Untuk mengambil data dari playlist Spotify, aplikasi menggunakan otorisasi **Spotify Web API** resmi dengan metode **PKCE Authorization Code Flow** yang aman dan berjalan 100% di sisi klien.
+
+* **Client ID**: Aplikasi ini telah terintegrasi dengan Client ID default.
+* **Alamat Redirect (Redirect URI)**:
+  Agar otorisasi berhasil, alamat situs Anda harus didaftarkan di dashboard pengembang Spotify Anda.
+  * Saat berjalan lokal: `http://localhost:5174/` atau `http://localhost:5173/`
+  * Saat berjalan live (GitHub Pages): `https://ardiansyaht.github.io/music/`
+* **Cara Mengatasi Error `redirect_uri: Not matching configuration`**:
+  1. Masuk ke [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard).
+  2. Buka App Anda dan masuk ke bagian **Settings**.
+  3. Di kolom **Redirect URIs**, pastikan Anda telah menambahkan alamat yang sesuai:
+     * `http://localhost:5174` (jika menguji lokal)
+     * `https://ardiansyaht.github.io/music/` (jika di GitHub Pages)
+  4. Klik **Save** di bagian bawah dashboard Spotify.
 
 ---
 
@@ -72,7 +103,7 @@ npm install
 npm run dev
 ```
 
-Buka **http://localhost:5173** di browser Anda.
+Buka **http://localhost:5174** di browser Anda.
 
 ---
 
@@ -99,10 +130,11 @@ Buka **http://localhost:5173** di browser Anda.
 | 🔍 Search / Stream | **Piped API** | Pencarian video & backup stream otomatis | ✅ |
 | 📝 Lirik | **LRCLIB.net** | Pengambilan lirik sinkron format LRC | ✅ |
 | 🖼️ Album Art | **Deezer API** | Pengambilan cover album melalui JSONP | ✅ |
+| 🟢 Playlist Auth | **Spotify API (PKCE)** | Integrasi login & data playlist Spotify | ✅ |
 
 ---
 
-## 📁 Struktur Project Baru (Modular)
+## 📁 Struktur Project Modular
 
 ```
 music/
@@ -122,11 +154,18 @@ music/
     │   ├── LyricsPanel.jsx     # Panel lirik reguler
     │   ├── FullscreenLyrics.jsx# Overlay lirik layar penuh
     │   ├── RecommendedPanel.jsx# Panel rekomendasi lagu artis sejenis
-    │   └── PlayerBar.jsx       # Kontrol audio (Play, Prev, Next, Seek)
+    │   ├── PlayerBar.jsx       # Kontrol audio (Play, Prev, Next, Seek)
+    │   ├── PlaylistModal.jsx   # 📂 Modal impor playlist (BETA)
+    │   └── PlaylistModal.css   # Styling kaca glassmorphic playlist modal
     ├── hooks/
     │   └── useYouTubePlayer.js # 🎣 Custom hook manajemen YouTube IFrame API
     └── utils/
-        ├── api.js              # 🌐 Integrasi API (Piped, LRCLIB, Deezer)
+        ├── api/                # 🌐 Modul API Terpisah
+        │   ├── index.js        # Barrel file exports
+        │   ├── deezer.js       # Deezer API (album art JSONP)
+        │   ├── lrclib.js       # LRCLIB API (lirik lagu)
+        │   ├── piped.js        # Piped API (YouTube search & playlists)
+        │   └── spotify.js      # Spotify API (PKCE Code Auth & tracks)
         └── helpers.js          # 🛠️ Helper waktu, parser LRC, & sorting video
 ```
 

@@ -92,13 +92,26 @@ export default function PlaylistModal({ isOpen, onClose, onImportQueue }) {
     <div className="playlist-modal-overlay">
       <div className="playlist-modal">
         <div className="pl-modal-header">
-          <h3>Impor Playlist</h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            Impor Playlist <span className="pl-beta-badge" style={{
+              fontSize: '0.65rem',
+              fontWeight: '800',
+              padding: '0.15rem 0.4rem',
+              borderRadius: '4px',
+              border: '1px solid var(--accent)',
+              color: 'var(--accent)',
+              letterSpacing: '0.5px'
+            }}>BETA</span>
+          </h3>
           <button className="pl-close-btn" onClick={onClose}>✕</button>
         </div>
 
         <div className="pl-modal-body">
           <div className="pl-input-group">
-            <label>Link Playlist (Spotify atau YouTube)</label>
+            <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span>Link Playlist (Spotify atau YouTube)</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 'normal', textTransform: 'none' }}>⚠️ Fitur ini masih dalam tahap uji coba (Beta)</span>
+            </label>
             <div className="pl-input-row">
               <input
                 type="text"
