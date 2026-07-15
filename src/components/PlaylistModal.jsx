@@ -68,6 +68,8 @@ export default function PlaylistModal({ isOpen, onClose, onImportQueue }) {
       if (e.message === 'UNAUTHORIZED') {
         setError('Otorisasi Spotify kedaluwarsa atau tidak valid. Silakan klik authorize ulang.');
         localStorage.removeItem('spotify-access-token');
+      } else if (e.message === 'FORBIDDEN') {
+        setError('Akses ditolak (403). Sesuai kebijakan baru Spotify (Februari 2026), Anda hanya dapat memuat playlist yang Anda miliki atau di mana Anda menjadi kolaborator.');
       } else {
         setError(e.message || 'Gagal memuat playlist. Pastikan playlist bersifat Publik.');
       }

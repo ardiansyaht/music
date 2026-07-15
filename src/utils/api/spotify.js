@@ -3,7 +3,7 @@
  */
 export const fetchSpotifyPlaylistTracks = async (playlistId, accessToken) => {
   let tracks = [];
-  let nextUrl = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=100`;
+  let nextUrl = `https://api.spotify.com/v1/playlists/${playlistId}/items?limit=100`;
 
   try {
     while (nextUrl) {
@@ -16,6 +16,9 @@ export const fetchSpotifyPlaylistTracks = async (playlistId, accessToken) => {
       if (!res.ok) {
         if (res.status === 401) {
           throw new Error('UNAUTHORIZED');
+        }
+        if (res.status === 403) {
+          throw new Error('FORBIDDEN');
         }
         throw new Error(`Spotify API returned status ${res.status}`);
       }
