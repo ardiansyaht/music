@@ -17,6 +17,7 @@ import PlayerBar from './components/PlayerBar';
 import FullscreenLyrics from './components/FullscreenLyrics';
 import RecommendedPanel from './components/RecommendedPanel';
 import Toast from './components/Toast';
+import PlaylistModal from './components/PlaylistModal';
 import './components/AlbumsDrawer.css';
 
 export default function App() {
@@ -115,6 +116,9 @@ export default function App() {
   const [albumTracks, setAlbumTracks] = useState([]);
   const [loadingTracks, setLoadingTracks] = useState(false);
 
+  // ── Playlist Importer Modal State ──
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
+
   // ── Toast Notification State ──
   const [toastMsg, setToastMsg] = useState('');
   const [toastIcon, setToastIcon] = useState('');
@@ -149,6 +153,37 @@ export default function App() {
   useEffect(() => { currentLyricsRef.current = currentLyrics; }, [currentLyrics]);
   useEffect(() => { currentPlaylistRef.current = currentPlaylist; }, [currentPlaylist]);
   useEffect(() => { currentPlaylistIndexRef.current = currentPlaylistIndex; }, [currentPlaylistIndex]);
+
+  // ── Parse Spotify Callback Token ──
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token=')) {
+      const params = new URLSearchParams(hash.substring(1));
+      const accessToken = params.get('access_token');
+      const expiresIn = params.get('expires_in');
+      const state = params.get('state');
+      const savedState = localStorage.getItem('spotify-auth-state');
+
+      if (accessToken && state === savedState) {
+        localStorage.setItem('spotify-access-token', accessToken);
+        const expiryTime = Date.now() + parseInt(expiresIn) * 1000;
+        localStorage.setItem('spotify-token-expiry', expiryTime.toString());
+        
+        showToast('Spotify Berhasil Diotorisasi!', 'success');
+
+        // Clear hash from URL cleanly
+        window.history.replaceState(null, null, window.location.pathname);
+
+        // Resume pending playlist loading if any
+        const pendingUrl = localStorage.getItem('spotify-pending-url');
+        if (pendingUrl) {
+          localStorage.removeItem('spotify-pending-url');
+          setIsPlaylistModalOpen(true);
+        }
+      }
+      localStorage.removeItem('spotify-auth-state');
+    }
+  }, []);
 
   // ── YouTube Player Hook ──
   const yt = useYouTubePlayer({
@@ -526,6 +561,15 @@ export default function App() {
     playTrackByInfo(item);
   };
 
+  // ── Import tracks from playlist ──
+  const handleImportPlaylistTracks = (tracks) => {
+    if (tracks.length === 0) return;
+    const [first, ...rest] = tracks;
+    setSongQueue(rest);
+    playTrackByInfo(first);
+    showToast(`Mengimpor ${tracks.length} lagu!`, 'success');
+  };
+
   // ── Select from homepage suggestions ──
   const handleQuickSuggestion = (suggestion) => {
     setSongQueue([]);
@@ -858,6 +902,7 @@ export default function App() {
         searchResults={searchResults}
         onSelectTrack={selectTrack}
         onGoHome={() => setCurrentView('home')}
+        onOpenPlaylistModal={() => setIsPlaylistModalOpen(true)}
       />
 
       {/* Main Content */}
@@ -1070,6 +1115,13 @@ export default function App() {
           )}
         </div>
       </div>
+
+      {/* Playlist Importer Modal */}
+      <PlaylistModal
+        isOpen={isPlaylistModalOpen}
+        onClose={() => setIsPlaylistModalOpen(false)}
+        onImportQueue={handleImportPlaylistTracks}
+      />
 
       {/* Toast Notification overlay */}
       <Toast message={toastMsg} icon={toastIcon} isVisible={toastVisible} />
