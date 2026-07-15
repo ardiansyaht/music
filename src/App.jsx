@@ -5,8 +5,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { LYRICS_DATA } from './lyrics';
 import { useYouTubePlayer } from './hooks/useYouTubePlayer';
-import { searchPiped, searchLRCLIB, fetchDeezerArt, fetchArtistTracks } from './utils/api';
-import { parseLRC, extractVideoId, prioritizeLyricVideos, cleanArtistName } from './utils/helpers';
+import { searchPiped, searchLRCLIB, fetchDeezerArt, fetchArtistTracks, fetchArtistAlbums, fetchAlbumTracks } from './utils/api';
+import { parseLRC, extractVideoId, prioritizeLyricVideos, cleanArtistName, formatTime } from './utils/helpers';
 
 import TopBar from './components/TopBar';
 import HomePage from './components/HomePage';
@@ -17,6 +17,7 @@ import PlayerBar from './components/PlayerBar';
 import FullscreenLyrics from './components/FullscreenLyrics';
 import RecommendedPanel from './components/RecommendedPanel';
 import Toast from './components/Toast';
+import './components/AlbumsDrawer.css';
 
 export default function App() {
   // ── Theme ──
@@ -103,6 +104,16 @@ export default function App() {
   const [isLoadingRecs, setIsLoadingRecs] = useState(false);
   const [isLoadingTrack, setIsLoadingTrack] = useState(false);
   const [isBarHidden, setIsBarHidden] = useState(false);
+
+  // ── Artist Albums Drawer ──
+  const [artistAlbums, setArtistAlbums] = useState([]);
+  const [loadingAlbums, setLoadingAlbums] = useState(false);
+  const [showAlbumsDrawer, setShowAlbumsDrawer] = useState(false);
+  const [activeArtist, setActiveArtist] = useState('');
+  const [drawerMode, setDrawerMode] = useState('albums'); // 'albums' | 'tracks'
+  const [selectedAlbum, setSelectedAlbum] = useState(null);
+  const [albumTracks, setAlbumTracks] = useState([]);
+  const [loadingTracks, setLoadingTracks] = useState(false);
 
   // ── Toast Notification State ──
   const [toastMsg, setToastMsg] = useState('');
@@ -624,6 +635,117 @@ export default function App() {
     yt.seekToAndPlay(targetTime);
   };
 
+  // ── Singer Albums Drawer Actions ──
+  const handleShowAlbums = async (artistName) => {
+    if (!artistName) return;
+    const cleaned = cleanArtistName(artistName);
+    setActiveArtist(cleaned);
+    setDrawerMode('albums');
+    setSelectedAlbum(null);
+    setShowAlbumsDrawer(true);
+    setLoadingAlbums(true);
+    setArtistAlbums([]);
+
+    try {
+      const albums = await fetchArtistAlbums(cleaned);
+      setArtistAlbums(albums);
+    } catch (e) {
+      console.error(e);
+      showToast('Gagal memuat album', '✕');
+    } finally {
+      setLoadingAlbums(false);
+    }
+  };
+
+  const handleAlbumClick = async (album) => {
+    setSelectedAlbum(album);
+    setDrawerMode('tracks');
+    setLoadingTracks(true);
+    setAlbumTracks([]);
+
+    try {
+      const tracks = await fetchAlbumTracks(album.id);
+      setAlbumTracks(tracks);
+    } catch (e) {
+      console.error(e);
+      showToast('Gagal memuat daftar lagu', '✕');
+    } finally {
+      setLoadingTracks(false);
+    }
+  };
+
+  const playTrackFromAlbum = async (track) => {
+    setShowAlbumsDrawer(false);
+    setIsLoadingTrack(true);
+
+    try {
+      showToast(`Mencari "${track.title}"...`, '🔍');
+      const results = await searchPiped(`${activeArtist} ${track.title} lyrics`);
+      if (results.length > 0) {
+        const candidates = results.map(r => ({
+          videoId: extractVideoId(r.url),
+          title: r.title,
+          artist: r.uploaderName
+        })).filter(r => r.videoId);
+
+        const sorted = prioritizeLyricVideos(candidates);
+        if (sorted.length > 0) {
+          const mainVideo = sorted[0];
+
+          // Fetch cover art and update state
+          setSongInfo({
+            title: track.title,
+            artist: activeArtist,
+            album: selectedAlbum?.title || '',
+            thumbnail: selectedAlbum?.cover || '',
+            videoId: mainVideo.videoId
+          });
+
+          // Sync lyrics
+          const lrcResults = await searchLRCLIB(`${activeArtist} ${track.title}`);
+          const syncedMatch = lrcResults.find(r => r.syncedLyrics);
+          if (syncedMatch) {
+            const parsed = parseLRC(syncedMatch.syncedLyrics);
+            setCurrentLyrics(parsed);
+            setCurrentLyricIndex(-1);
+            currentLyricIndexRef.current = -1;
+          } else {
+            const plainMatch = lrcResults.find(r => r.plainLyrics);
+            if (plainMatch) {
+              const parsedPlain = plainMatch.plainLyrics.split('\n').map(line => ({
+                time: -1,
+                text: line,
+                type: line.trim() === '' ? 'empty' : 'lyric'
+              }));
+              setCurrentLyrics(parsedPlain);
+            } else {
+              setCurrentLyrics([]);
+            }
+            setCurrentLyricIndex(-1);
+            currentLyricIndexRef.current = -1;
+          }
+
+          // Trigger YouTube player
+          setCurrentPlaylist(sorted);
+          setCurrentPlaylistIndex(0);
+          yt.playVideo(mainVideo.videoId);
+          setIsPlaying(true);
+          setCurrentView('player');
+          showToast(`Memutar ${track.title}`, '▶');
+        } else {
+          showToast('Lagu tidak dapat diputar', '✕');
+        }
+      } else {
+        showToast('Lagu tidak ditemukan di YouTube', '✕');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Gagal memuat lagu', '✕');
+    } finally {
+      setIsLoadingTrack(false);
+    }
+  };
+
   // ══════════════════════════════════════════════════════
   //  SEARCH
   // ══════════════════════════════════════════════════════
@@ -744,7 +866,7 @@ export default function App() {
           <HomePage onSelectSuggestion={handleQuickSuggestion} />
         ) : (
           <div className="player-view">
-            <NowPlaying songInfo={songInfo} isPlaying={isPlaying} isLoading={isLoadingTrack} />
+            <NowPlaying songInfo={songInfo} isPlaying={isPlaying} isLoading={isLoadingTrack} onShowAlbums={handleShowAlbums} />
             <Visualizer isPlayingRef={isPlayingRef} />
             <div className="content-row">
               <LyricsPanel
@@ -819,6 +941,135 @@ export default function App() {
         onForward={handleForward}
         onSeek={handleSeek}
       />
+
+      {/* Artist Albums Drawer Overlay */}
+      <div
+        className={`albums-drawer-backdrop ${showAlbumsDrawer ? 'visible' : ''}`}
+        onClick={() => setShowAlbumsDrawer(false)}
+      ></div>
+      <div className={`albums-drawer ${showAlbumsDrawer ? 'visible' : ''}`}>
+        <div className="drawer-header">
+          <h2 className="drawer-title" style={{ fontSize: '1rem', fontWeight: '800' }}>
+            {drawerMode === 'albums' ? `Album dari ${activeArtist}` : selectedAlbum?.title}
+          </h2>
+          <button className="drawer-close" onClick={() => setShowAlbumsDrawer(false)} title="Tutup">
+            ✕
+          </button>
+        </div>
+
+        <div className="drawer-content">
+          {drawerMode === 'albums' ? (
+            // Albums list mode
+            loadingAlbums ? (
+              <div className="drawer-loading">
+                <div className="drawer-loading-spinner"></div>
+                <p>Memuat album...</p>
+              </div>
+            ) : artistAlbums.length === 0 ? (
+              <p className="drawer-empty">Tidak ada album ditemukan</p>
+            ) : (
+              <div className="album-grid">
+                {artistAlbums.map((album) => (
+                  <div
+                    key={album.id}
+                    className="album-card"
+                    onClick={() => handleAlbumClick(album)}
+                    title={`Klik untuk melihat lagu dari album "${album.title}"`}
+                  >
+                    <img
+                      className="album-card-art"
+                      src={album.cover || 'placeholder.png'}
+                      alt={album.title}
+                      loading="lazy"
+                    />
+                    <div className="album-card-info">
+                      <span className="album-card-title">{album.title}</span>
+                      {album.releaseDate && (
+                        <span className="album-card-meta">
+                          {new Date(album.releaseDate).getFullYear()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : (
+            // Tracks list in selected album mode
+            <div className="album-tracks-view">
+              <button
+                className="artist-albums-btn"
+                onClick={() => setDrawerMode('albums')}
+                style={{ marginBottom: '1.2rem', padding: '0.3rem 0.8rem' }}
+              >
+                ← Kembali ke Album
+              </button>
+
+              <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', alignItems: 'center' }}>
+                <img
+                  src={selectedAlbum?.cover}
+                  alt={selectedAlbum?.title}
+                  style={{ width: '80px', height: '80px', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0,0,0,0.15)' }}
+                />
+                <div>
+                  <h3 style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--text-1)' }}>{selectedAlbum?.title}</h3>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-2)', marginTop: '0.15rem' }}>{activeArtist}</p>
+                </div>
+              </div>
+
+              {loadingTracks ? (
+                <div className="drawer-loading">
+                  <div className="drawer-loading-spinner"></div>
+                  <p>Memuat daftar lagu...</p>
+                </div>
+              ) : albumTracks.length === 0 ? (
+                <p className="drawer-empty">Tidak ada lagu dalam album ini</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  {albumTracks.map((track, idx) => (
+                    <div
+                      key={track.id}
+                      onClick={() => playTrackFromAlbum(track)}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '0.6rem 0.8rem',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateX(4px)';
+                        e.currentTarget.style.borderColor = 'var(--accent)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.borderColor = 'var(--border)';
+                      }}
+                      title={`Klik untuk memutar "${track.title}"`}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-2)', width: '18px', textAlign: 'center' }}>
+                          {idx + 1}
+                        </span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {track.title}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-2)', fontFamily: 'var(--font-mono)' }}>
+                        {formatTime(track.duration)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Toast Notification overlay */}
       <Toast message={toastMsg} icon={toastIcon} isVisible={toastVisible} />

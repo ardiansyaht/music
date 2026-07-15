@@ -1,0 +1,4 @@
+.visualizer-strip{flex-shrink:0;height:45px;margin-bottom:.4rem;border-radius:var(--radius-s);overflow:hidden}
+#visualizerCanvas{width:100%;height:100%;display:block}
+
+/* Lyrics */

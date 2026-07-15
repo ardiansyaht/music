@@ -1,0 +1,222 @@
+/* ================================================================
+   FULLSCREEN LYRICS OVERLAY
+   ================================================================ */
+.fullscreen-overlay{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(30px) saturate(1.2);
+  display:flex;
+  flex-direction:column;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .4s cubic-bezier(.16,1,.3,1);
+}
+.fullscreen-overlay.active{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.fs-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:1rem 1.5rem;
+  flex-shrink:0;
+}
+
+.fs-song-info{
+  display:flex;
+  align-items:center;
+  gap:.8rem;
+}
+
+.fs-art{
+  width:48px;
+  height:48px;
+  border-radius:10px;
+  object-fit:cover;
+  box-shadow:0 4px 15px rgba(0,0,0,.3);
+}
+.fs-art-placeholder{
+  width:48px;
+  height:48px;
+  border-radius:10px;
+  background:var(--vinyl-gradient);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:1.2rem;
+}
+
+.fs-text{
+  display:flex;
+  flex-direction:column;
+  gap:.15rem;
+}
+
+.fs-title{
+  font-family:var(--font-display);
+  font-weight:800;
+  font-size:1rem;
+  color:#fff;
+  letter-spacing:-.3px;
+}
+
+.fs-artist{
+  font-size:.75rem;
+  color:rgba(255,255,255,.5);
+  font-weight:500;
+}
+
+.fs-close{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:none;
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  font-size:1.1rem;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .2s;
+}
+.fs-close:hover{
+  background:rgba(255,255,255,.2);
+  transform:scale(1.1);
+}
+
+.fs-lyrics-scroll{
+  flex:1;
+  overflow-y:auto;
+  padding:2rem 3rem 6rem;
+  scroll-behavior:smooth;
+  mask-image:linear-gradient(to bottom,transparent 0%,black 10%,black 80%,transparent 100%);
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0%,black 10%,black 80%,transparent 100%);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.fs-lyrics-scroll::-webkit-scrollbar{width:0}
+
+.fs-lyric-line{
+  font-family: var(--font-lyric);
+  font-size: 2.3rem;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.45;
+  padding:.6rem 1.2rem;
+  color:rgba(255,255,255,.2);
+  cursor:pointer;
+  border-radius:var(--radius-s);
+  transition:all .45s cubic-bezier(.25,1,.5,1);
+  text-align:center;
+  max-width:800px;
+  width:100%;
+}
+.fs-lyric-line:hover{
+  color:rgba(255,255,255,.5);
+}
+.fs-lyric-line.active{
+  color:#fff;
+  font-weight: 900;
+  letter-spacing: -1.2px;
+  transform:scale(1.1);
+  text-shadow:0 0 40px var(--accent-glow),0 0 80px var(--accent-glow);
+}
+.fs-lyric-line.instrumental{
+  font-style:italic;
+  font-size:1.3rem;
+  color:rgba(255,255,255,.12);
+}
+.fs-lyric-line.instrumental.active{
+  color:rgba(255,255,255,.7);
+  transform:scale(1.05);
+}
+
+.fs-controls{
+  flex-shrink:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:1rem;
+  padding:1rem 1.5rem 1.5rem;
+  background:linear-gradient(to top,rgba(0,0,0,.6),transparent);
+  transition: opacity .4s ease, transform .4s ease;
+}
+.fs-controls.hidden{
+  opacity:0;
+  transform:translateY(20px);
+  pointer-events:none;
+}
+.fs-controls.visible{
+  opacity:1;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+
+.fs-ctrl-btn{
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  border:none;
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  font-size:1rem;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .2s;
+}
+.fs-ctrl-btn:hover{
+  background:rgba(255,255,255,.2);
+  transform:scale(1.08);
+}
+.fs-ctrl-play{
+  width:52px;
+  height:52px;
+  font-size:1.2rem;
+  background:var(--vinyl-gradient);
+  box-shadow:0 4px 20px var(--accent-glow);
+}
+.fs-ctrl-play:hover{
+  transform:scale(1.08);
+  box-shadow:0 6px 30px var(--accent-glow);
+}
+
+.fs-progress{
+  display:flex;
+  align-items:center;
+  gap:.6rem;
+  width:100%;
+  max-width:400px;
+}
+
+.fs-time{
+  font-size:.65rem;
+  font-weight:600;
+  color:rgba(255,255,255,.4);
+  font-family:var(--font-mono);
+  min-width:33px;
+}
+
+.fs-track{
+  flex:1;
+  height:3px;
+  background:rgba(255,255,255,.15);
+  border-radius:2px;
+  cursor:pointer;
+  position:relative;
+}
+.fs-fill{
+  height:100%;
+  background:var(--vinyl-gradient);
+  border-radius:2px;
+  box-shadow:0 0 8px var(--accent-glow);
+}
+

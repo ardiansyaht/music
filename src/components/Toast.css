@@ -1,0 +1,31 @@
+/* ================================================================
+   1. TOAST NOTIFICATION STYLING
+   ================================================================ */
+.toast-notification {
+  position: fixed;
+  bottom: 85px;
+  right: 25px;
+  background: var(--text-1);
+  color: var(--bg-primary);
+  padding: 0.6rem 1.2rem;
+  border-radius: var(--radius-m);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  opacity: 0;
+  transform: translateY(15px) scale(0.95);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 2000;
+}
+.toast-notification.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.toast-icon {
+  font-size: 1rem;
+}
+

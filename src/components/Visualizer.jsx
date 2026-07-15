@@ -2,6 +2,7 @@
 //  Melodia — Visualizer Component
 // ================================================================
 import React, { useRef, useEffect, useCallback } from 'react';
+import './Visualizer.css';
 
 export default function Visualizer({ isPlayingRef }) {
   const canvasRef = useRef(null);

@@ -2,8 +2,9 @@
 //  Melodia — NowPlaying Component
 // ================================================================
 import React from 'react';
+import './NowPlaying.css';
 
-export default function NowPlaying({ songInfo, isPlaying, isLoading }) {
+export default function NowPlaying({ songInfo, isPlaying, isLoading, onShowAlbums }) {
   if (isLoading) {
     return (
       <section className="now-playing skeleton">
@@ -35,7 +36,18 @@ export default function NowPlaying({ songInfo, isPlaying, isLoading }) {
           <h1 className="np-song-title">{songInfo.title || 'Pilih lagu untuk diputar'}</h1>
           {songInfo.videoId && <span className="np-badge np-badge-full">FULL SONG</span>}
         </div>
-        <p className="np-artist">{songInfo.artist}</p>
+        <div className="np-artist-row" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginTop: '0.2rem' }}>
+          <p className="np-artist" style={{ margin: 0 }}>{songInfo.artist}</p>
+          {songInfo.artist && onShowAlbums && (
+            <button
+              className="artist-albums-btn"
+              onClick={() => onShowAlbums(songInfo.artist)}
+              title={`Lihat album dari ${songInfo.artist}`}
+            >
+              💿 Lihat Album
+            </button>
+          )}
+        </div>
         {songInfo.album && <p className="np-album">{songInfo.album}</p>}
       </div>
     </section>

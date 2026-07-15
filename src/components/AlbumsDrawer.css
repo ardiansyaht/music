@@ -1,0 +1,188 @@
+/* ================================================================
+   6. ARTIST ALBUMS DRAWER
+   ================================================================ */
+.albums-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+}
+.albums-drawer-backdrop.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.albums-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 380px;
+  max-width: 100%;
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border);
+  box-shadow: -10px 0 40px rgba(0,0,0,0.25);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-theme="vhs"] .albums-drawer,
+[data-theme="space"] .albums-drawer,
+[data-theme="cyber"] .albums-drawer {
+  background: rgba(10, 10, 15, 0.95);
+  backdrop-filter: blur(25px);
+}
+[data-theme="pastel"] .albums-drawer {
+  background: rgba(253, 242, 240, 0.95);
+  backdrop-filter: blur(25px);
+}
+
+.albums-drawer.visible {
+  transform: translateX(0);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.drawer-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--text-1);
+}
+.drawer-close {
+  background: none;
+  border: none;
+  color: var(--text-1);
+  font-size: 1.1rem;
+  cursor: pointer;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.drawer-close:hover {
+  background: var(--surface-hover);
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+.drawer-content::-webkit-scrollbar {
+  width: 5px;
+}
+.drawer-content::-webkit-scrollbar-thumb {
+  background: var(--text-3);
+  border-radius: 3px;
+}
+
+.album-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+.album-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  cursor: pointer;
+  border-radius: var(--radius-m);
+  padding: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all 0.25s ease;
+}
+.album-card:hover {
+  background: var(--surface-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.album-card-art {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.album-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.album-card-title {
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: var(--text-1);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.2;
+}
+.album-card-meta {
+  font-size: 0.6rem;
+  color: var(--text-2);
+}
+
+.drawer-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-2);
+  font-size: 0.85rem;
+}
+.drawer-loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--text-3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 0.8rem;
+}
+
+.drawer-empty {
+  text-align: center;
+  color: var(--text-2);
+  padding: 2rem;
+  font-size: 0.85rem;
+}
+
+.artist-albums-btn {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-1);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: all 0.2s ease;
+}
+.artist-albums-btn:hover {
+  background: var(--surface-hover);
+  transform: scale(1.05);
+  border-color: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+

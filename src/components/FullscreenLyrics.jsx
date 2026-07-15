@@ -4,6 +4,7 @@
 // ================================================================
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { formatTime } from '../utils/helpers';
+import './FullscreenLyrics.css';
 
 export default function FullscreenLyrics({
   isActive,

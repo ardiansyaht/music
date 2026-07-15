@@ -2,6 +2,7 @@
 //  Melodia — LyricsPanel Component
 // ================================================================
 import React, { useState, useEffect, useRef } from 'react';
+import './LyricsPanel.css';
 
 export default function LyricsPanel({
   currentLyrics,

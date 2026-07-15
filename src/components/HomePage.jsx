@@ -3,6 +3,7 @@
 // ================================================================
 import React from 'react';
 import { QUICK_SUGGESTIONS } from '../constants';
+import './HomePage.css';
 
 export default function HomePage({ onSelectSuggestion }) {
   return (

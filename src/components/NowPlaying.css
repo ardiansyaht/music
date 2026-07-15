@@ -1,0 +1,23 @@
+/* ================================================================
+   NOW PLAYING
+   ================================================================ */
+.now-playing{flex-shrink:0;display:flex;align-items:center;gap:1.5rem;padding:1rem 0}
+.np-art-wrapper{position:relative;flex-shrink:0;width:90px;height:90px}
+.np-album-art{width:100%;height:100%;border-radius:14px;object-fit:cover;display:none;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .4s ease}
+.np-album-art.visible{display:block}
+.np-album-art.playing{animation:art-pulse 3s ease-in-out infinite}
+@keyframes art-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.np-art-placeholder{width:100%;height:100%;border-radius:14px;background:var(--vinyl-gradient);display:flex;align-items:center;justify-content:center;font-size:2.2rem;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.np-art-placeholder.hidden{display:none}
+.np-art-glow{position:absolute;inset:-12px;border-radius:20px;background:var(--vinyl-gradient);opacity:.12;filter:blur(18px);z-index:-1;transition:opacity .4s}
+
+.np-info{flex:1;min-width:0}
+.np-title-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.np-song-title{font-family:var(--font-display);font-size:1.5rem;font-weight:800;letter-spacing:-.5px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.np-badge{font-size:.55rem;font-weight:800;text-transform:uppercase;padding:.2rem .5rem;border-radius:50px;color:#fff;letter-spacing:.5px;flex-shrink:0}
+.np-badge-full{background:linear-gradient(135deg,#00c853,#00e676);animation:badge-glow 2s ease-in-out infinite}
+@keyframes badge-glow{0%,100%{box-shadow:none}50%{box-shadow:0 0 12px rgba(0,200,100,.5)}}
+.np-artist{font-size:.85rem;color:var(--text-2);font-weight:500;margin-top:.1rem}
+.np-album{font-size:.72rem;color:var(--text-3);font-style:italic;margin-top:.1rem}
+
+/* Visualizer */
